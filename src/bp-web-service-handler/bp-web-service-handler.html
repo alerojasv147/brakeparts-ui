@@ -1,0 +1,216 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="bp-web-service-handler">
+    <template>
+        <style>
+            :host {
+                display: none;
+            }
+        </style>
+
+        <iron-ajax
+            id="ajax"
+            url="[[webServiceHostName]]/[[webServiceUri]]"
+            headers="[[_computeHeaders(userId, password, headers)]]"
+            handle-as="json"
+            content-type="application/json"
+            on-response="_handleResponse">
+        </iron-ajax>
+    </template>
+    
+    <script>
+        Polymer({
+            is: "bp-web-service-handler",
+
+            properties: {
+                addResponseType:{
+                    type: String,
+                    value: "addResponse"
+                },
+                deleteResponseType:{
+                    type: String,
+                    value: "deleteResponse"
+                },
+                getResponseType: {
+                    type: String,
+                    value: "getResponse"
+                },
+                headers:{
+                    type: Object,
+                    notify: true,
+                    value: function(){ return {} }
+                },
+                modifyResponseType:{
+                    type: String,
+                    value: "modifyResponse"
+                },
+                password: {
+                    type: String,
+                    notify: true
+                },
+                requiresAddRequest: Boolean,
+                requiresDeleteRequest: Boolean,
+                requiresGetRequest:Boolean,
+                requiresModifyRequest: Boolean,
+                userId: {
+                    type: String,
+                    notify: true
+                },
+                webServiceHostName: {
+                    type: String,
+                    notify: true
+                },
+                webServiceUri:{
+                    type: String,
+                    notify: true,
+                    value: ""
+                },
+                wsDebounce: {
+                    type: Number,
+                    value: 0
+                }
+            },
+    
+            _timeout: null,
+
+            /**
+             * Sets the _timeout property to null.
+             * @private
+             */
+            _clearTimeout: function() {
+                this._timeout = null;
+            },
+    
+            /**
+             * Compute the headers
+             * @param _userId
+             * @param _password
+             * @param _headers
+             */
+            _computeHeaders: function( _userId, _password, _headers ){
+                const headers = _headers;
+    
+                // If a user id and password is supplied, add the Authorization header...
+                if ( _userId && _password ) {
+                    headers["Authorization"] = "Basic " + btoa( _userId + ":" + _password );
+                }
+
+                return headers;
+            },
+
+            /**
+             * Handle the response coming from the ajax request.
+             * @param _ajaxResponse
+             * @private
+             */
+            _handleResponse: function( _ajaxResponse ) {
+                const response = _ajaxResponse.detail.response;
+                const responseType = _ajaxResponse.currentTarget.method.toLowerCase();
+
+                if ( response ) {
+                    const configuredResponseType = this.get( responseType +  "ResponseType");
+                    if ( configuredResponseType ) {
+                        if ( response.type === configuredResponseType )
+                            this._dispatchResponseEvents( response, responseType );
+                    } else {
+                        this.fire( responseType + "-response", response );
+                    }
+                }
+            },
+    
+            /**
+             * Dispatch response events based on the response type.  get, modify, add, delete
+             * @param _response
+             * @param _responseType
+             */
+            _dispatchResponseEvents: function( _response, _responseType ) {
+                // Catch all event
+                this.fire( _responseType + "-" + "response", _response );
+
+                if ( _response.successful )
+                    this.fire( _responseType + "-response-success", _response );
+                else
+                    this.fire( _responseType + "-response-fail", _response );
+            },
+    
+            /**
+             * Set query parameters in a iron ajax element.
+             * @param _ironAjax
+             * @param _queryParams
+             * @private
+             */
+            _setQueryParameters: function( _ironAjax, _queryParams ) {
+                if ( _ironAjax && _queryParams ) _ironAjax.params = _queryParams;
+            },
+    
+            /**
+             * Set the body in an iron ajax element.
+             * @param _ironAjax
+             * @param _requestObject
+             * @private
+             */
+            _setBody: function( _ironAjax, _requestObject ) {
+                if ( _ironAjax && _requestObject ) _ironAjax.body = _requestObject;
+            },
+    
+            /**
+             * Generate a get request.
+             * @param _queryParams
+             */
+            generateGetRequest: function( _queryParams ) {
+                const $ajax = this.$.ajax;
+                $ajax.method = "GET";
+                if ( this.get("wsDebounce") > 0 ) {
+                    if ( !this._timeout ) {
+                        this._setQueryParameters($ajax, _queryParams);
+                        $ajax.generateRequest();
+                        this._timeout = setTimeout(this._clearTimeout.bind(this), this.get("wsDebounce"));
+                    }
+                } else {
+                    this._setQueryParameters($ajax, _queryParams);
+                    $ajax.generateRequest();
+                }
+    
+            },
+    
+            /**
+             * Generate a modify request.
+             * @param _requestObject
+             * @param _queryParams
+             */
+            generateModifyRequest: function( _requestObject, _queryParams ){
+                const $ajax = this.$.ajax;
+                $ajax.method = "PUT";
+                this._setQueryParameters($ajax, _queryParams);
+                this._setBody($ajax, _requestObject);
+                $ajax.generateRequest();
+            },
+    
+            /**
+             * Generate an add request.
+             * @param _requestObject
+             * @param _queryParams
+             */
+            generateAddRequest: function( _requestObject, _queryParams ){
+                const $ajax = this.$.ajax;
+                $ajax.method = "POST";
+                this._setQueryParameters($ajax, _queryParams);
+                this._setBody($ajax, _requestObject);
+                $ajax.generateRequest();
+            },
+    
+            /**
+             * Generate a delete request.
+             * @param _queryParams
+             */
+            generateDeleteRequest: function( _queryParams ) {
+                const $ajax = this.$.ajax;
+                $ajax.method = "DELETE";
+                this._setQueryParameters($ajax, _queryParams );
+                $ajax.generateRequest();
+            }
+        });
+    
+    </script>
+</dom-module>

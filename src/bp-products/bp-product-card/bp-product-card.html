@@ -1,0 +1,110 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../../bower_components/paper-card/paper-card.html">
+
+<dom-module id="bp-product-card">
+    <template>
+        <style include="iron-flex">
+            :host {
+                outline: none !important;
+            }
+            paper-card {
+                width: 300px;
+                height:465px;
+                margin: 4px 32px 16px 8px;
+            }
+            .title {
+                font-size: 20px;
+                font-weight: 500;
+            }
+            .subtitle {
+                color: #9b9b9b;
+                font-weight: 500;
+            }
+            .code {
+                float: right;
+                font-size: 16px;
+                vertical-align: middle;
+            }
+            .description {
+                margin-top: 12px;
+                font-size: 14px;
+            }
+            .no-link-style {
+                text-decoration: none;
+            }
+            paper-button {
+                color: #d32f2f;
+                font-weight: 500;
+            }
+            table tr th,
+            table tr td {
+                padding: 0 16px 0 0;
+                box-sizing: border-box;
+                font-size: 14px;
+                text-align: left;
+                text-transform: uppercase;
+            }
+        </style>
+
+        <paper-card image="[[product.imageUrl]]">
+            <div class="card-content">
+                <div class="title">
+                    [[product.group]]
+                    <div class="code">[[product.productCode]]</div>
+                </div>
+                <div class="subtitle">[[product.name]]</div>
+                <div class="description">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </div>
+            </div>
+            <div class="card-actions horizontal layout flex">
+                <table>
+                    <tr>
+                        <th class="header">Ancho</th>
+                        <th class="header">Alto</th>
+                        <th class="header">Largo</th>
+                    </tr>
+                    <tr>
+                        <td>[[product.width]]</td>
+                        <td>[[product.height]]</td>
+                        <td>[[product.length]]</td>
+                    </tr>
+                </table>
+                <a class="no-link-style" href="/#/product-detail">
+                    <paper-button on-tap="_viewDetails">Detalles</paper-button>
+                </a>
+            </div>
+        </paper-card>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'bp-product-card',
+
+            properties: {
+                product: {
+                    type: Object,
+                    notify: true,
+                    value: function () { return {} }
+                },
+                selectedPage: {
+                    type: String,
+                    notify: true,
+                    value: ''
+                }
+            },
+
+            _viewDetails: function() {
+                this.fire('view-product-details', {
+                    product: this.product
+                });
+            }
+        });
+    </script>
+</dom-module>

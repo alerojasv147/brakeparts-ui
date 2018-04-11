@@ -1,0 +1,52 @@
+[
+  {
+	"id": 1,
+	"productCode": "SW-N1224",
+	"name": "Test Name",
+	"group": "Test Group",
+	"width": "1.5'",
+	"height": "2.5'",
+	"length": "3.5'",
+	"imageUrl": "./images/products/product1.png"
+  },
+  {
+	"id": 1,
+	"productCode": "SW-N1224",
+	"name": "Test Name",
+	"group": "Test Group",
+	"width": "1.5'",
+	"height": "2.5'",
+	"length": "3.5'",
+	"imageUrl": "./images/products/product1.png"
+  },
+  {
+	"id": 1,
+	"productCode": "SW-N1224",
+	"name": "Test Name",
+	"group": "Test Group",
+	"width": "1.5'",
+	"height": "2.5'",
+	"length": "3.5'",
+	"imageUrl": "./images/products/product1.png"
+  },
+  {
+	"id": 1,
+	"productCode": "SW-N1224",
+	"name": "Test Name",
+	"group": "Test Group",
+	"width": "1.5'",
+	"height": "2.5'",
+	"length": "3.5'",
+	"imageUrl": "./images/products/product1.png"
+  },
+  {
+	"id": 1,
+	"productCode": "SW-N1224",
+	"name": "Test Name",
+	"group": "Test Group",
+	"width": "1.5'",
+	"height": "2.5'",
+	"length": "3.5'",
+	"imageUrl": "./images/products/product1.png"
+  }
+]

@@ -1,0 +1,512 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
+
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+
+<dom-module id="bp-autocomplete-input">
+    <template>
+        <style is="custom-style" include="iron-flex">
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+            }
+            [hidden] {
+                display: none !important;
+            }
+
+            /* Elements */
+            div[secondary] {
+                @apply(--paper-font-body1);
+            }
+            iron-list {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            paper-input {
+                --paper-input-container-focus-color: #d32f2f;
+            }
+            paper-spinner-lite {
+                width: 16px;
+                height: 16px;
+                --paper-spinner-color: #2fd3d3;
+                --paper-spinner-stroke-width: 1px;
+            }
+            paper-item {
+                position: relative;
+            }
+            paper-item:hover, paper-item.focused {
+                background: #f2f2f2;
+                font-weight: 500;
+                cursor: pointer;
+            }
+
+            /* Classes */
+            .input-wrapper {
+                @apply(--layout-horizontal);
+            }
+            .input-wrapper paper-input {
+                @apply(--layout-flex);
+            }
+
+            /* Specific Elements (by ID) */
+            #arrow_down, #clear {
+                cursor: pointer;
+            }
+            #list_wrapper {
+                width: 100%;
+                position: absolute;
+                overflow: hidden;
+                overflow-y: auto;
+                z-index: 1000;
+                background-color: #fff;
+            }
+        </style>
+
+        <div class="input-wrapper">
+            <paper-input
+                id="input"
+                label="[[label]]"
+                value="{{searchText}}"
+                always-float-label$="[[alwaysFloatLabel]]"
+                disabled="{{disabled}}"
+                error-message="[[errorMessage]]"
+                on-keyup="_onKeyup">
+                <template is="dom-if" if="[[!isLoading]]">
+                    <iron-icon
+                        id="arrow_down"
+                        icon="arrow-drop-down"
+                        on-mousedown="_clear"
+                        suffix
+                        hidden$="[[showList]]">
+                    </iron-icon>
+                    <iron-icon
+                        id="clear"
+                        icon="clear"
+                        on-mousedown="_clear"
+                        hidden$="[[_hideClearIcon(searchText, showList)]]"
+                        suffix>
+                    </iron-icon>
+                </template>
+                <template is="dom-if" if="[[isLoading]]">
+                    <paper-spinner-lite active suffix></paper-spinner-lite>
+                </template>
+            </paper-input>
+        </div>
+        <paper-material
+            id="list_wrapper"
+            elevation="1"
+            hidden$="[[!showList]]">
+            <iron-list
+                id="iron_list"
+                items="[[filteredDataItems]]">
+                <template>
+                    <paper-item on-mousedown="_selectItem" value="[[item]]" tabindex$="[[tabIndex]]">
+                        <template is="dom-if" if="[[twoLine]]">
+                            <paper-item-body  two-line>
+                                <div>[[_computeText(item)]]</div>
+                                <div secondary>[[_computeValue(item)]]</div>
+                            </paper-item-body>
+                        </template>
+                        <template is="dom-if" if="[[!twoLine]]">
+                            <div>[[_computeText(item)]]</div>
+                        </template>
+                    </paper-item>
+                </template>
+            </iron-list>
+        </paper-material>
+    </template>
+
+    <script>
+        // Element Definition
+        Polymer({
+            is: 'bp-autocomplete-input',
+
+            /*
+             * -------------------------------------------
+             *              Polymer Definitions
+             * -------------------------------------------
+             */
+            properties: {
+                alwaysFloatLabel: Boolean,
+                disabled: Boolean,
+                filteredDataItems: Array,
+                isLoading: {
+                    type: Boolean,
+                    value: false
+                },
+                label: String,
+                list: Array,
+                searchText: String,
+                selectedItem: {
+                    type: Object,
+                    notify: true
+                },
+                showList: {
+                    type: Boolean,
+                    value: false
+                },
+                scrollIndex: {
+                    type: Number,
+                    value: -1
+                },
+                twoLine: {
+                    type: Boolean,
+                    value: false
+                },
+                textProperty: String,
+                value: {
+                    type: Object,
+                    notify: true,
+                    value: () => {}
+                },
+                valueProperty: String
+            },
+
+            observers: [
+                '_checkIsValidValue(list.*)',
+                '_filterItems(list.*, searchText)'
+            ],
+
+            listeners: {
+                'input.blur': '_onBlur',
+                'input.mousedown': '_onMouseDown',
+                'list_wrapper.mouseover': '_onMouseOver'
+            },
+
+
+            /**
+             * Invalidate this input.
+             */
+            invalidate: function() {
+                this.$$('#input').invalid = true;
+            },
+
+            /**
+             * Validate the selected item.
+             */
+            validate: function() {
+                this.$$('#input').invalid = !this.searchText;
+            },
+
+            /*
+             * -------------------------------------------
+             *              Private Functions
+             * -------------------------------------------
+             */
+
+            /**
+             * Checks if the value entered is valid.
+             * @param {Array} _list.
+             * @private
+             */
+            _checkIsValidValue: function( _list ) {
+                const list = _list.base;
+
+                if ( list && this.value ) {
+                    const found = list.find( item => {
+                        let value = this.value[this.valueProperty] || this.value;
+                        if ( this.valueProperty ) {
+                            return item[this.valueProperty] === value;
+                        } else {
+                            return item === value;
+                        }
+                    });
+
+                    if ( !found ) {
+                        this.set('searchText', '');
+                        this.set('value', '');
+                        this.set('selectedItem', '');
+                    }
+                }
+            },
+
+
+            /**
+             * Clear the search input and show the list.
+             * @private
+             */
+            _clear: function() {
+                this.set('searchText', '');
+                this.async( () => {
+                    this._showList();
+                }, 100);
+
+            },
+
+            /**
+             * Returns the `text-property` attribute of the item.
+             * @param {Object} _item.
+             * @return {String}
+             * @private
+             */
+            _computeText: function( _item ) {
+                return this.textProperty ? _item[this.textProperty] : _item.toString();
+            },
+
+            /**
+             * Returns the `value-property` attribute of the item.
+             * @param {String} _item.
+             * @return {String}
+             * @private
+             */
+            _computeValue: function( _item ) {
+                return _item[this.valueProperty];
+            },
+
+            /**
+             * Filter an array of objects by their values
+             * using string input via value.includes(String).
+             * @param {Array} _items.
+             * @param {String} _searchText.
+             * @return {Array}
+             * @private
+             */
+            _filterItems: function( _items, _searchText ) {
+                const items = _items.base;
+                const searchText = _searchText ? _searchText.toLowerCase() : '';
+                let filteredData = [];
+
+                if ( items && items.length > 0 ) {
+                    const type = typeof _items.base[0];
+
+                    switch ( type ) {
+                        case 'number':
+                            filteredData = items.filter( _item => {
+                                let text = _item ? _item.toString() : '';
+                                let regex = new RegExp('^' + searchText, 'gi');
+                                return regex.test(text);
+                            });
+                            break;
+                        case 'string':
+                            filteredData = items.filter( _item => {
+                                let text =  _item ? _item.toLowerCase() : '';
+                                return text.includes(searchText);
+                            });
+                            break;
+                        case 'object':
+                            items.forEach( _item => {
+                                for ( let prop in _item ) {
+                                    if ( _item.hasOwnProperty(prop) ) {
+                                        let propValue = _item[prop] ? _item[prop].toString().toLowerCase() : '';
+                                        if ( propValue.includes(searchText) ) {
+                                            filteredData.push(_item);
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                            break;
+                    }
+                }
+
+                this.set('filteredDataItems', filteredData);
+            },
+
+            /**
+             * Get all `paper-item` elements.
+             * @return {*|NodeList}
+             * @private
+             */
+            _getItems: function() {
+                return Polymer.dom(this.root).querySelectorAll('paper-item');
+            },
+
+            /**
+             * Hides the clear icon.
+             * @param {String} _searchText - The search text.
+             * @param {Boolean} _showList - The show list flag.
+             * @private
+             */
+             _hideClearIcon: function( _searchText, _showList ) {
+                return !_searchText || !_showList;
+            },
+
+            /**
+             * Hide the iron-list, wrapper, and arrow icon.
+             * @private
+             */
+            _hideList: function() {
+                this.set('showList', false);
+            },
+
+            /**
+             * Handle `Enter` key presses by setting the current focused item
+             * to the selected item.
+             * @param {Event} _event.
+             * @private
+             */
+            _keyenter: function( _event ) {
+                const $selected = this.$$('paper-item.focused');
+
+                try {
+                    _event.model = { 'item': $selected.value };
+                    this._selectItem(_event);
+                } catch (err) {
+                    console.error(err);
+                }
+            },
+
+            /**
+             * Reset the `autocomplete-input` value to the last value
+             * if no new item has been selected.
+             * @private
+             */
+            _onBlur: function() {
+                if (this.textProperty) {
+                    if ( this.searchText === '' || this.searchText !== this.selectedItem[this.textProperty] ) {
+                        this.set('searchText', this.selectedItem ? this.selectedItem[this.textProperty] : '');
+                    }
+                } else {
+                    if ( this.searchText === '' || this.searchText !== this.selectedItem.toString() ) {
+                        const type = typeof this.selectedItem !== 'object';
+                        this.set('searchText', type !== 'object' && this.selectedItem ? this.selectedItem.toString() : '');
+                    }
+                }
+                this._hideList();
+            },
+
+            /**
+             * Special handling for `ArrowDown`, `ArrowUp`, and `Enter` keys.
+             * @param {Event} _event.
+             * @private
+             */
+            _onKeyup: function( _event ) {
+                this.set('showList', true);
+
+                // 40: 'ArrowDown', 38: 'ArrowUp', 13: 'Enter'
+                switch ( _event.keyCode ) {
+                    case 40:
+                        this._navigateTo(true);
+                        break;
+                    case 38:
+                        this._navigateTo(false);
+                        break;
+                    case 13:
+                        this._keyenter(_event);
+                        break;
+                }
+            },
+
+            /**
+             * Open the list when a user clicks the input.
+             * @param {Event} _event.
+             * @private
+             */
+            _onMouseDown: function( _event ) {
+                _event.stopPropagation();
+                this._showList();
+            },
+
+            /**
+             * Removes the `focus` class from moused-over items
+             * to eliminate focus collision with key press scrolling
+             * (arrow based selection).
+             * @private
+             */
+            _onMouseOver: function() {
+                this._removeFocusedClass();
+            },
+
+            /**
+             * Adjust the scroll index via keypress.
+             * @param {Boolean} _scrollDown.
+             * @private
+             */
+            _navigateTo: function( _scrollDown ) {
+                if ( this.scrollIndex === -1 ) {
+                    this.scrollIndex++;
+                    this._scrollTo(this.scrollIndex);
+                    return;
+                }
+
+                if ( _scrollDown && this.scrollIndex < this.list.length -1 ) {
+                    this.scrollIndex++;
+                }
+
+                if ( !_scrollDown && this.scrollIndex > 0 ) {
+                    this.scrollIndex--;
+                }
+
+                this._scrollTo(this.scrollIndex);
+            },
+
+            /**
+             * Remove class `focused` from a list item.
+             * @private
+             */
+            _removeFocusedClass: function() {
+                const $items = this._getItems();
+
+                $items.forEach( _item => {
+                    _item.toggleClass('focused', false);
+                });
+            },
+
+            /**
+             * Scroll the `iron-list` and set the focused item
+             * taking hidden/filtered items into consideration.
+             * @param {Number} _index.
+             * @private
+             */
+            _scrollTo: function( _index ) {
+                const $list = this.$$('iron-list');
+                const $item = this._getItems()[_index];
+
+                if ( !$item.hidden ) {
+                    $list.scrollToIndex(_index);
+                    this._removeFocusedClass();
+                    $item.toggleClass('focused', true);
+                } else {
+                    this.scrollIndex--;
+                }
+            },
+
+            /**
+             * Make a selection from the list and properly
+             * update search criteria and scrolling information.
+             * @param {Event} _event.
+             * @private
+             */
+            _selectItem: function( _event ) {
+                const item  = _event.model.item;
+
+                this.set('selectedItem', item);
+                this.set('value', item[this.valueProperty] || item);
+                this.set('searchText', item[this.textProperty] || item.toString());
+                this.set('scrollIndex', -1);
+                this._removeFocusedClass();
+                this._hideList();
+                this.fire('iron-select', {
+                    'selectedItem' : this.selectedItem
+                });
+
+                _event.currentTarget.toggleClass('active', true);
+            },
+
+            /**
+             * Show the iron-list, list wrapper, and clear icon.
+             * Hide the arrow down icon. Give the input element focus.
+             * @private
+             */
+            _showList: function() {
+                this._removeFocusedClass();
+                this.set('scrollIndex', -1);
+                this.set('showList', true);
+                this.$$('#input').inputElement.focus();
+                this.async(function() {
+                    const $list = this.$$('iron-list');
+                    const windowHeight = window.innerHeight;
+                    const topPosition = $list.getBoundingClientRect().top;
+                    $list.style.maxHeight = windowHeight - topPosition - 12 + 'px';
+                    this.$$('iron-list').notifyResize();
+                }, 100);
+            }
+        });
+    </script>
+</dom-module>

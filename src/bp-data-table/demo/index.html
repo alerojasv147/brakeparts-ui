@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>eip-data-table demo</title>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+        <script src="../../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+        <link rel="import" href="../../../bower_components/polymer/polymer.html">
+        <link rel="import" href="../../../bower_components/iron-demo-helpers/demo-snippet.html">
+        <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+        <link rel="import" href="../../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+
+        <link rel="import" href="../../eip-date-time-element-behavior/eip-date-time-element-behavior.html">
+
+        <link rel="stylesheet" href="../../../styles/main.css">
+        <link rel="import" href="../eip-data-table.html">
+    </head>
+    <body>
+
+        <demo-snippet>
+            <template>
+                <template is="dom-bind">
+
+                    <style is="custom-style">
+                        #table-a {
+                            max-width: 900px;
+                            display: block;
+
+                            --primary-color: #666;
+                            --max-body-height: 200px;
+                            --responsive-breakpoint: 1024px;
+                        }
+
+                        #table-b {
+                            --primary-color: #08c;
+                            --responsive-breakpoint: 1024px;
+                        }
+                    </style>
+
+                    <eip-data-table
+                        id="table-a"
+                        config="[[config]]"
+                        items="[[items]]"
+                        columns="[[columns]]">
+                    </eip-data-table>
+
+                    <br><br>
+
+                    <eip-data-table
+                        id="table-b"
+                        config="[[config2]]"
+                        items="[[items]]"
+                        selected-items="{{selectedItems}}"
+                        columns="[[columns]]">
+                    </eip-data-table>
+
+                </template>
+
+                <script>
+                    var template = Polymer.dom(this.root).querySelector("template[is='dom-bind']");
+
+                    template.config = {
+                        enableSelection: false,
+                        actions: {
+                            enabled: true,
+                            handlers: [{
+                                label: "Edit",
+                                action: function(item) {
+                                    console.log("Edit action for", item);
+                                }
+                            }, {
+                                label: "Delete",
+                                action: function(item) {
+                                    console.log("Delete action for", item);
+                                }
+                            }]
+                        }
+                    };
+
+                    template.config2 = {
+                        enableSelection: true,
+                        selectAllLabel: "Select All"
+                    };
+
+                    template.columns = [{
+                        title: "Column 1 foo [Editable_Text]",
+                        dataProperty: "foo",
+                        editable: {
+                            enabled: true,
+                            type: "text"
+                        }
+                    }, {
+                        title: "Column 2 bar [Fixed_Width]",
+                        dataProperty: "bar",
+                        fixedWidth: 250
+                    }, {
+                        title: "Column 3 lorem [Formatted_editable]",
+                        dataProperty: "lorem",
+                        dataFormatter: function(value) {
+                            return EipBehaviors.DateTimeElementBehavior.formatDateTime(value);
+                        },
+                        editable: {
+                            enabled: true,
+                            type: "text"
+                        }
+                    }, {
+                        title: "Col4 Currency [formatted_aligned]",
+                        dataProperty: "currency",
+                        dataFormatter: function(value) {
+                            return (value || 0).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + " $us";
+                        },
+                        textAlign: "right"
+                    }, {
+                        title: "Column 5 ipsum [Editable_Dropdown]",
+                        dataProperty: "ipsum",
+                        editable: {
+                            enabled: true,
+                            type: "dropdown",
+                            items: ["Arya Stark", "Tyrion Lannister", "Daenerys Targaryen", "Aegon Targaryen",
+                                "Cersei Lannister", "Jaime Lannister", "Activate Conditional Column", ""]
+                        }
+                    }, {
+                        title: "Col6 Conditional Column [Conditional_Edit_Colunm]",
+                        dataProperty: "conditionalCol",
+                        dataFormatter: function(value) {
+                            return EipBehaviors.DateTimeElementBehavior.formatDateTime(value, "L");
+                        },
+                        editable: {
+                            enabled: function(item) {
+                                return item.ipsum === "Activate Conditional Column";
+                            },
+                            type: "date"
+                        }
+                    }];
+
+                    template.items = [{
+                        foo: "Row 1, named col [foo]",
+                        bar: "Row 1, named col [bar] - Fixed 250 width",
+                        lorem: "2016-06-02T18:20:39-04:00",
+                        ipsum: "Daenerys Targaryen",
+                        conditionalCol: "2016-06-02",
+                        currency: 12345
+                    }, {
+                        ipsum: "Tyrion Lannister",
+                        conditionalCol: "2016-06-03",
+                        bar: "Row 2, named col [bar]",
+                        currency: 987.65
+                    }, {
+                        foo: "Row 3, named col [foo]",
+                        ipsum: "Cersei Lannister",
+                        conditionalCol: "2016-06-02"
+                    }, {
+                        foo: "Row 4, named col [foo]",
+                        bar: "Row 4, named col [bar]: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed lorem ac quam lacinia laoreet ut at leo.",
+                        currency: 3999.99,
+                        conditionalCol: "2016-06-02"
+                    }, {
+                        bar: "Row 5, named col [bar]",
+                        foo: "Row 5, named col [foo]",
+                        conditionalCol: "2016-06-02"
+                    }];
+
+                </script>
+            </template>
+        </demo-snippet>
+
+    </body>
+</html>

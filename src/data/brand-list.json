@@ -1,0 +1,392 @@
+{
+  "type": "getResponse",
+  "successful": true,
+  "payload": {
+    "vehicleList": [
+      {
+        "id": 1,
+        "name": "acura"
+      },
+      {
+        "id": 2,
+        "name": "alfa romeo"
+      },
+      {
+        "id": 3,
+        "name": "aro"
+      },
+      {
+        "id": 4,
+        "name": "asia motors"
+      },
+      {
+        "id": 5,
+        "name": "aston martin"
+      },
+      {
+        "id": 6,
+        "name": "audi"
+      },
+      {
+        "id": 7,
+        "name": "bentley"
+      },
+      {
+        "id": 8,
+        "name": "bmw"
+      },
+      {
+        "id": 9,
+        "name": "bmw (alpina)"
+      },
+      {
+        "id": 10,
+        "name": "bobcat"
+      },
+      {
+        "id": 11,
+        "name": "bova"
+      },
+      {
+        "id": 12,
+        "name": "bugatti"
+      },
+      {
+        "id": 13,
+        "name": "buick gm"
+      },
+      {
+        "id": 14,
+        "name": "cadillac gm"
+      },
+      {
+        "id": 15,
+        "name": "caterpillar"
+      },
+      {
+        "id": 16,
+        "name": "chata"
+      },
+      {
+        "id": 17,
+        "name": "chevrolet gm"
+      },
+      {
+        "id": 18,
+        "name": "china car"
+      },
+      {
+        "id": 19,
+        "name": "chrysler"
+      },
+      {
+        "id": 20,
+        "name": "citroen"
+      },
+      {
+        "id": 21,
+        "name": "daewoo"
+      },
+      {
+        "id": 22,
+        "name": "daf"
+      },
+      {
+        "id": 23,
+        "name": "daihatsu"
+      },
+      {
+        "id": 24,
+        "name": "datsun"
+      },
+      {
+        "id": 25,
+        "name": "dodge"
+      },
+      {
+        "id": 26,
+        "name": "dongfeng"
+      },
+      {
+        "id": 27,
+        "name": "ferrari"
+      },
+      {
+        "id": 28,
+        "name": "fiat"
+      },
+      {
+        "id": 29,
+        "name": "ford"
+      },
+      {
+        "id": 30,
+        "name": "ford mercury"
+      },
+      {
+        "id": 31,
+        "name": "ford usa"
+      },
+      {
+        "id": 32,
+        "name": "gaz"
+      },
+      {
+        "id": 33,
+        "name": "geely"
+      },
+      {
+        "id": 34,
+        "name": "gmc truck"
+      },
+      {
+        "id": 35,
+        "name": "hafei"
+      },
+      {
+        "id": 36,
+        "name": "hino"
+      },
+      {
+        "id": 37,
+        "name": "holden"
+      },
+      {
+        "id": 38,
+        "name": "honda"
+      },
+      {
+        "id": 39,
+        "name": "hummer"
+      },
+      {
+        "id": 40,
+        "name": "hyundai"
+      },
+      {
+        "id": 41,
+        "name": "industrial"
+      },
+      {
+        "id": 42,
+        "name": "infiniti"
+      },
+      {
+        "id": 43,
+        "name": "isuzu"
+      },
+      {
+        "id": 44,
+        "name": "iveco"
+      },
+      {
+        "id": 45,
+        "name": "jaguar"
+      },
+      {
+        "id": 46,
+        "name": "jeep"
+      },
+      {
+        "id": 47,
+        "name": "kia"
+      },
+      {
+        "id": 48,
+        "name": "lada"
+      },
+      {
+        "id": 49,
+        "name": "lamborghini"
+      },
+      {
+        "id": 50,
+        "name": "lancia"
+      },
+      {
+        "id": 51,
+        "name": "land rover"
+      },
+      {
+        "id": 52,
+        "name": "lexus"
+      },
+      {
+        "id": 53,
+        "name": "ligier automobiles"
+      },
+      {
+        "id": 54,
+        "name": "lincoln"
+      },
+      {
+        "id": 55,
+        "name": "london taxi"
+      },
+      {
+        "id": 56,
+        "name": "lotus"
+      },
+      {
+        "id": 57,
+        "name": "luxgen"
+      },
+      {
+        "id": 58,
+        "name": "maserati"
+      },
+      {
+        "id": 59,
+        "name": "mazda"
+      },
+      {
+        "id": 60,
+        "name": "mazda japan ford"
+      },
+      {
+        "id": 61,
+        "name": "mercedez benz"
+      },
+      {
+        "id": 62,
+        "name": "microcar"
+      },
+      {
+        "id": 63,
+        "name": "mini"
+      },
+      {
+        "id": 64,
+        "name": "mitsubishi"
+      },
+      {
+        "id": 65,
+        "name": "mitsuoka"
+      },
+      {
+        "id": 66,
+        "name": "moto"
+      },
+      {
+        "id": 67,
+        "name": "naza"
+      },
+      {
+        "id": 68,
+        "name": "nissan"
+      },
+      {
+        "id": 69,
+        "name": "oldsmobile gmc"
+      },
+      {
+        "id": 70,
+        "name": "opel"
+      },
+      {
+        "id": 71,
+        "name": "opel brasil"
+      },
+      {
+        "id": 72,
+        "name": "opel vauxhall"
+      },
+      {
+        "id": 73,
+        "name": "perodua"
+      },
+      {
+        "id": 74,
+        "name": "peugeot"
+      },
+      {
+        "id": 75,
+        "name": "peugeot mega aixav"
+      },
+      {
+        "id": 76,
+        "name": "porshe"
+      },
+      {
+        "id": 77,
+        "name": "proton"
+      },
+      {
+        "id": 78,
+        "name": "renault"
+      },
+      {
+        "id": 79,
+        "name": "rolls royce"
+      },
+      {
+        "id": 80,
+        "name": "rover"
+      },
+      {
+        "id": 81,
+        "name": "rover mg"
+      },
+      {
+        "id": 82,
+        "name": "saab"
+      },
+      {
+        "id": 83,
+        "name": "santana motor"
+      },
+      {
+        "id": 84,
+        "name": "scania"
+      },
+      {
+        "id": 85,
+        "name": "seat"
+      },
+      {
+        "id": 86,
+        "name": "skoda"
+      },
+      {
+        "id": 87,
+        "name": "smart"
+      },
+      {
+        "id": 88,
+        "name": "ssangyong"
+      },
+      {
+        "id": 89,
+        "name": "subaru"
+      },
+      {
+        "id": 90,
+        "name": "suzuki"
+      },
+      {
+        "id": 91,
+        "name": "tata motors"
+      },
+      {
+        "id": 92,
+        "name": "toyota"
+      },
+      {
+        "id": 93,
+        "name": "tractor"
+      },
+      {
+        "id": 94,
+        "name": "volkswagen"
+      },
+      {
+        "id": 95,
+        "name": "volvo"
+      },
+      {
+        "id": 96,
+        "name": "zastava"
+      }
+    ]
+  }
+}

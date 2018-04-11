@@ -1,0 +1,159 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bp-web-service-handler/bp-web-service-handler.html">
+<link rel="import" href="../../bp-data-table/bp-data-table.html">
+
+<dom-module id="bp-product-detail">
+    <template>
+        <style include="iron-flex">
+            bp-data-table {
+                margin-top: 24px;
+                --primary-color: #607D8B;
+            }
+            .row {
+                padding: 4px 0;
+            }
+            .subtitle {
+                text-transform: uppercase;
+                font-weight: 500;
+                margin-right: 8px;
+            }
+            #product_image {
+                width: 300px;
+                height: 225px;
+                border: 2px solid #f2f2f2;
+                border-radius: 8px;
+                margin-right: 24px;
+            }
+            #product_description {
+                height: 75px;
+            }
+            #title {
+                text-transform: uppercase;
+                font-weight: 500;
+                font-size: 20px;
+            }
+        </style>
+
+        <section id="info_section" class="horizontal layout">
+            <div id="product_image">
+                <img src="[[autoPart.imageUrl]]" />
+            </div>
+            <div class="vertical layout flex">
+                <div id="product_info" class="flex">
+                    <div id="title">[[currentProduct.group]] [[currentProduct.productCode]]</div>
+                    <div class="horizontal layout row">
+                        <div class="subtitle">OEM Code:</div>
+                        [[autoPart.oemCode]]
+                    </div>
+                    <div class="horizontal layout row">
+                        <div class="subtitle">Marca:</div>
+                        [[autoPart.brand]]
+                    </div>
+                    <div class="horizontal layout row">
+                        <div class="subtitle">Precio:</div>
+                        [[autoPart.price]]
+                    </div>
+                    <div class="horizontal layout row">
+                        <div class="subtitle">Stock:</div>
+                        [[autoPart.stock]]
+                    </div>
+                </div>
+
+                <div id="product_description">[[autoPart.description]]</div>
+            </div>
+        </section>
+
+        <section id="data_table_section" class="horizontal layout">
+            <bp-data-table
+                id="auto_parts_data_table"
+                config="[[dataTableConfig]]"
+                items="[[autoPartList]]"
+                columns="[[dataTableColumns]]"
+                selected-item="{{autoPart}}">
+            </bp-data-table>
+        </section>
+
+        <bp-web-service-handler
+            id="product_detail_service"
+            web-service-host-name="src/data"
+            web-service-uri="product-detail.json"
+            on-get-response-success="_handleProductDetailGetResponseSuccess"
+            on-get-response-fail="_handleProductDetailGetResponseFail">
+        </bp-web-service-handler>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'bp-product-detail',
+
+            properties: {
+                autoPart: {
+                    type: Object,
+                    notify: true,
+                    value: {}
+                },
+                autoPartList: {
+                    type: Array,
+                    notify: true,
+                    value: []
+                },
+                currentProduct: {
+                    type: Object,
+                    notify: true,
+                    value: {}
+                },
+                dataTableConfig: {
+                    type: Object,
+                    value: {
+                        enableSelection: false,
+                        enableSingleSelection: true
+                    }
+                },
+                dataTableColumns: {
+                    type: Array,
+                    value: [
+                        {
+                            title: 'CODIGO',
+                            dataProperty: 'oemCode'
+                        },
+                        {
+                            title: 'TIPO',
+                            dataProperty: 'type'
+                        },
+                        {
+                            title: 'VEHICULO',
+                            dataProperty: 'vehicle'
+                        },
+                        {
+                            title: 'BRAND',
+                            dataProperty: 'brand'
+                        },
+                    ]
+                },
+                selectedPage: {
+                    type: String,
+                    notify: true,
+                    value: ''
+                }
+            },
+
+            _handleProductDetailGetResponseSuccess: function( _event ) {
+                const payload = _event.detail.payload;
+                if ( payload ) {
+                    this.set('autoPartList', payload.autoPartList);
+                    this.set('autoPart', this.autoPartList[0]);
+                }
+            },
+
+            retrieveInitialData: function() {
+                this.$.product_detail_service.generateGetRequest();
+            },
+
+            attached: function() {
+                this.retrieveInitialData();
+            }
+        });
+    </script>
+</dom-module>

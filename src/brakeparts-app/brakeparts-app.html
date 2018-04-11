@@ -1,0 +1,71 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bp-navigation/bp-navigation.html">
+
+<dom-module id="brakeparts-app">
+    <template>
+        <style include="iron-flex"></style>
+
+        <!-- Navigation element -->
+        <bp-navigation
+                id="bp_navigation"
+                base-url="[[baseUrl]]"
+                logged-in-user="{{loggedInUser}}"
+                is-logged-in="[[isLoggedIn]]">
+        </bp-navigation>
+    </template>
+
+    <script>
+      Polymer({
+        is: 'brakeparts-app',
+
+        properties: {
+          baseUrl: String,
+          isLoggedIn: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          loggedInUser: {
+            type: Object,
+            notify: true,
+            value: null
+          }
+        },
+
+        listeners: {
+          'bp-authentication-success': '_handleAuthenticationSuccess'
+        },
+
+        observers: [
+          '_checkLoggedInUser(loggedInUser)'
+        ],
+
+        _checkLoggedInUser: function (_loggedInUser) {
+          this.set("isLoggedIn", !!_loggedInUser);
+        },
+
+        _handleAuthenticationSuccess: function (_event) {
+          const userProfile = _event.detail.loggedInUser;
+          const sessionData = {
+            "timestamp": Date.now(),
+            "userProfile": userProfile,
+          };
+
+          const encodedData = window.btoa(JSON.stringify(sessionData));
+          localStorage.setItem("bpSessionData", encodedData);
+
+          this.set('loggedInUser', userProfile);
+        },
+
+        ready: function () {
+          const encodedData = localStorage.getItem("bpSessionData"),
+            sessionData = encodedData ? JSON.parse(window.atob(encodedData)) : null;
+
+          if (sessionData) {
+            this.set('loggedInUser', sessionData.userProfile);
+          }
+        }
+      });
+    </script>
+</dom-module>

@@ -1,0 +1,657 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../bp-editable-field/bp-editable-field.html">
+
+<!--
+EIP Data Table
+
+`bp-data-table` is a responsive table to display simple items, it features a select column that allows
+ to select one or many items, this selected items are accessible from parent scope trough two way data binding
+ using the property `selected-items` that will contain an array with all the selected items.
+ This select column could be easily enabled or disabled trough a config attribute: `config.enableSelection: Boolean`
+
+`bp-data-table` also allows to customize the theme color, the table body height and the responsive breakpoint all
+this though css mixins explained below.
+
+Example:
+
+    <style is="custom-style">
+        bp-data-table {
+            --primary-color: #666;
+            --max-body-height: 400px;
+            --responsive-breakpoint: 768px;
+        }
+    </style>
+
+    <bp-data-table
+        config="[[config]]"
+        items="[[items]]"
+        selected-items="{{selectedItems}}"
+        columns="[[columns]]">
+    </bp-data-table>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--primary-color` | This color will be used for table headers | `#666`
+`--max-body-height` | Defines table maximum height, any overflow will be accessible trough an scroll bar | `none`
+`--responsive-breakpoint` | This will determinate when the table change it's layout to a vertical mode | `768px`
+
+@group EIP Elements
+@demo demo/index.html
+-->
+
+<dom-module id="bp-data-table">
+    <template>
+        <style>
+
+            bp-data-table {
+                display: block;
+                position: relative;
+            }
+
+            .table-container * {
+                box-sizing: border-box;
+            }
+
+            .table-container table {
+                width: 100%;
+                table-layout: fixed;
+                border-collapse: collapse;
+            }
+
+            .table-container table tr th {
+                padding: 12px 20px 8px 0;
+                text-align: left;
+                min-height: 40px;
+                font-size: 14px;
+                color: #fff;
+                background-color: var(--primary-color, #666);
+                text-transform: uppercase;
+                font-weight: normal;
+            }
+
+            .table-container table tr th:first-child {
+                width: 56px;
+                padding: 11px 10px 8px 16px;
+            }
+
+            .table-container table tr th paper-checkbox,
+            .table-container table tbody tr.sm-header paper-checkbox {
+                --paper-checkbox-unchecked-ink-color: #fff;
+                --paper-checkbox-unchecked-color: #fff;
+            }
+
+            .table-container table tr td {
+                box-sizing: border-box;
+                font-size: .75em;
+                text-align: left;
+                padding: 12px 20px 12px 0;
+            }
+
+            .table-container table tbody tr:nth-child(2n-1) {
+                background-color: #f2f2f2;
+            }
+
+            .table-container table tbody tr td:first-child {
+                width: 52px;
+                padding-left: 16px;
+            }
+
+            .table-container table tbody tr td.actions-menu-button,
+            .table-container table tbody tr th.actions-menu-button {
+                flex: none !important;
+                padding: 0 !important;
+                width: 40px;
+            }
+
+            .table-container table thead tr th:not(.checkbox):nth-child(2),
+            .table-container table tbody tr td:not(.checkbox):nth-child(2) {
+                padding-left: 16px;
+            }
+
+            .table-container .visible-below-breakpoint {
+                display: none !important;
+            }
+
+            .table-container .inline-title {
+                flex: 1;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 0 16px 0 0;
+                color: var(--primary-color, #666);
+                max-width: 200px;
+            }
+
+            .table-container [class*="max-height-enabled-true"] tbody {
+                display: block;
+                overflow-x: hidden;
+                overflow-y: auto;
+                max-height: var(--max-body-height, none);
+            }
+
+            .table-container table tbody tr.single-selectable:hover {
+                cursor: pointer;
+            }
+
+            .table-container table tbody tr.single-selectable.selected {
+                background: #9E9E9E;
+            }
+
+            @media (max-width: var(--responsive-breakpoint)) {
+                .table-container table thead {
+                    display: none;
+                }
+
+                .table-container table tbody {
+                    padding: 8px 0;
+                }
+
+                .table-container table tbody tr {
+                    position: relative;
+                    display: inline-block;
+                    width: 100%;
+                    padding: 4px 12px 4px 0;
+                }
+
+                .table-container table tbody tr.sm-header {
+                    background-color: var(--primary-color, #666);
+                    height: 34px;
+                    padding: 0;
+                }
+
+                .table-container table tbody tr.sm-header td {
+                    width: 100%;
+                }
+
+                .table-container table tbody tr td:first-child {
+                    position: absolute;
+                    display: block;
+                    top: 4px;
+                    left: 0;
+                    margin-left: 0 !important;
+                }
+
+                .table-container table tbody tr td:nth-child(2) {
+                    padding-top: 4px;
+                }
+
+                .table-container table thead tr th:last-child,
+                .table-container table tbody tr td:last-child {
+                    padding-bottom: 8px;
+                }
+
+                .table-container table tbody tr td {
+                    display: flex;
+                    height: initial;
+                    padding: 4px 0;
+                    width: calc(100% - 52px) !important;
+                    margin-left: 8px;
+                }
+
+                .table-container table tbody tr td.checkbox ~ td {
+                    margin-left: 52px;
+                }
+
+                .table-container .visible-below-breakpoint {
+                    display: block !important;
+                }
+
+                .table-container .table-data {
+                    flex: 2;
+                }
+
+                .table-container .select-all-label {
+                    text-transform: uppercase;
+                    color: #fff;
+                    font-size: 12px;
+                    position: absolute;
+                    top: 6px;
+                    left: 44px;
+                }
+
+                .table-container .clear-fix {
+                    clear: both;
+                }
+
+                bp-editable-field {
+                    flex: 2;
+                }
+
+                .table-container table thead tr th:not(.checkbox):nth-child(2),
+                .table-container table tbody tr td:not(.checkbox):nth-child(2) {
+                    padding-left: 0;
+                }
+
+                .table-container table thead tr th:not(.checkbox),
+                .table-container table thead tr td:not(.checkbox) {
+                    width: 0;
+                }
+            }
+
+            @media (min-width: calc(var(--responsive-breakpoint) + 1px)) {
+                .table-container [class*="max-height-enabled-true"] tbody {
+                    display: block;
+                }
+
+                .table-container [class*="max-height-enabled-true"] tr {
+                    display: flex;
+                }
+
+                .table-container [class*="max-height-enabled-true"] tr th,
+                .table-container [class*="max-height-enabled-true"] tr td {
+                    flex: 1;
+                    height: auto;
+                }
+
+                .table-container [class*="max-height-enabled-true"] tr .checkbox {
+                    flex: none;
+                }
+
+                bp-editable-field {
+                    margin: -8px;
+                }
+            }
+
+            bp-editable-field {
+                display: block;
+                min-width: 80px;
+            }
+
+            paper-menu-button {
+                padding: 0;
+            }
+
+            paper-item {
+                cursor: pointer;
+            }
+
+        </style>
+
+        <section class="table-container">
+
+            <table class$="max-height-enabled-[[config.maxBodyHeight]]">
+
+                <thead>
+                    <tr>
+                        <template is="dom-if" if="[[config.enableSelection]]">
+                            <th class="checkbox">
+                                <paper-checkbox
+                                    on-iron-change="_selectAllToggle">
+                                </paper-checkbox>
+                            </th>
+                        </template>
+                        <template is="dom-repeat" items="[[columns]]">
+                            <th style$="width: [[item.fixedWidth]]px;">
+                                [[item.title]]
+                            </th>
+                        </template>
+                        <template is="dom-if" if="[[config.actions.enabled]]">
+                            <th class="actions-menu-button" style="width:40px; flex:none;"></th>
+                        </template>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr class="sm-header visible-below-breakpoint">
+                        <td class="checkbox" colspan="3">
+                            <template is="dom-if" if="[[config.enableSelection]]">
+                                <paper-checkbox
+                                    on-iron-change="_selectAllToggle">
+                                </paper-checkbox>
+                                <div class="select-all-label">
+                                    [[config.selectAllLabel]]
+                                </div>
+                            </template>
+                        </td>
+                    </tr>
+
+                    <template is="dom-repeat" items="[[items]]" id="items_repeat" index-as="rowIndex">
+                        <tr data-item$="[[item]]" class$="[[_computeRowClass(config.enableSingleSelection)]]" on-tap="_addRemoveSelectedItem">
+
+                            <template is="dom-if" if="[[config.enableSelection]]">
+                                <td class="checkbox">
+                                    <paper-checkbox
+                                        noink
+                                        data-item$="[[item]]"
+                                        on-iron-change="_addRemoveSelectedItem"
+                                        checked="[[_isChecked]]">
+                                    </paper-checkbox>
+                                </td>
+                            </template>
+
+                            <template is="dom-repeat" items="[[columns]]" as="column" id="columns_repeat" on-rendered-item-count-changed="renderedCountChanged">
+                                <td style$="width: [[column.fixedWidth]]px;">
+                                    <div class="visible-below-breakpoint inline-title">
+                                        [[column.title]]
+                                    </div>
+
+                                    <!-- Regular data -->
+                                    <template is="dom-if" if="[[!_isEditableField(item, column, elementUpdates)]]">
+                                        <div class="table-data" style$="text-align: [[column.textAlign]];">
+                                            [[_getDataTableFormattedValue(item, column, elementUpdates)]]
+                                        </div>
+                                    </template>
+
+                                    <!-- Editable field -->
+                                    <template is="dom-if" if="[[_isEditableField(item, column, elementUpdates)]]">
+                                        <bp-editable-field
+                                            value="[[_getDataTableValue(item, column, elementUpdates)]]"
+                                            on-save="_updateItems"
+                                            formatter="[[_formatField(column)]]"
+                                            items="[[column.editable.items]]"
+                                            type="[[column.editable.type]]">
+                                        </bp-editable-field>
+                                    </template>
+
+                                </td>
+                            </template>
+
+                            <template is="dom-if" if="[[config.actions.enabled]]">
+                                <td class="actions-menu-button">
+                                    <paper-menu-button
+                                        id="paper_menu_[[rowIndex]]"
+                                        class="menu-col"
+                                        horizontal-align="right">
+                                        <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
+                                        <paper-menu class="dropdown-content">
+                                            <template is="dom-repeat" items="{{config.actions.handlers}}" as="handler">
+                                                <paper-item on-tap="_executeAction">
+                                                    [[handler.label]]
+                                                </paper-item>
+                                            </template>
+                                        </paper-menu>
+                                    </paper-menu-button>
+                                </td>
+                            </template>
+
+                        </tr>
+                    </template>
+
+                    <div class="clear-fix"></div>
+                </tbody>
+            </table>
+
+        </section>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'bp-data-table',
+
+            /*
+             * -------------------------------------------
+             *              Polymer Definitions
+             * -------------------------------------------
+             */
+            properties: {
+                columns: {
+                    type: Array,
+                    value: [{
+                        title: 'Column 1 named [foo]',
+                        dataProperty: 'foo',
+                        fixedWidth: 300
+                    }, {
+                        title: 'Column 2 named [bar]',
+                        dataProperty: 'bar',
+                        fixedWidth: 300
+                    }]
+                },
+                items: {
+                    type: Array,
+                    notify: true,
+                    value: [{
+                        foo: 'Row 1, named col [foo]',
+                        bar: 'Row 1, named col [bar]'
+                    }, {
+                        bar: 'Row 2, named col [bar]',
+                        foo: 'Row 2, named col [foo]'
+                    }]
+                },
+                renderedElementsCounter: {
+                    type: Number,
+                    notify: true,
+                    value: 0
+                },
+                elementUpdates: {
+                    type: Number,
+                    notify: true,
+                    value: 0
+                },
+                selectedItem: {
+                    type: Object,
+                    notify: true,
+                    value: function () { return {}; }
+                },
+                selectedItems: {
+                    type: Array,
+                    notify: true,
+                    value: function () { return []; }
+                },
+                config: {
+                    enableSelection: {
+                        type: Boolean,
+                        value: false
+                    },
+                    enableSingleSelection: {
+                        type: Boolean,
+                        value: false
+                    },
+                    enableActionsMenu: {
+                        type: Boolean,
+                        value: false
+                    },
+                    selectAllLabel: {
+                        type: String,
+                        value: 'Select All'
+                    },
+                    editableType: {
+                        type: String,
+                        value: null
+                    }
+                }
+            },
+
+            /*
+             * -------------------------------------------
+             *              Public Functions
+             * -------------------------------------------
+             */
+
+            /**
+             * Clears all selected items
+             */
+            clearSelection: function() {
+                var checkboxes = Polymer.dom(this.root).querySelectorAll('paper-checkbox');
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = false;
+                });
+            },
+
+            /*
+             * -------------------------------------------
+             *              Private Functions
+             * -------------------------------------------
+             */
+
+            /**
+             * Computes the row class based on the enable single selection property.
+             * @param {Boolean} _enableSingleSelection - The enable single selection property.
+             * @return {String}
+             * @private
+             */
+            _computeRowClass: function( _enableSingleSelection ) {
+                return _enableSingleSelection ? 'single-selectable' : '';
+            },
+
+            /**
+             * Returns the object property value for the column key
+             * @private
+             */
+            _formatField: function(column) {
+                if (column.dataFormatter) {
+                    return {
+                        format: function (value) {
+                            return column.dataFormatter(value);
+                        }
+                    }
+                } else return null;
+            },
+
+            /**
+             * Returns true or false if its an editable field column.
+             * @private
+             */
+            _isEditableField: function(item, columnConfig, itemUpdates) {
+                var result = false;
+                if (columnConfig.editable && (typeof columnConfig.editable.enabled !== 'undefined')) {
+                    if (typeof columnConfig.editable.enabled === 'boolean') {
+                        result = columnConfig.editable.enabled;
+                    } else if (typeof columnConfig.editable.enabled === 'function') {
+                        result = columnConfig.editable.enabled(item);
+                    }
+                }
+                return result;
+            },
+
+            /**
+             * Returns the object property value for the column key
+             * @private
+             */
+            _getDataTableValue: function(object, columnConfig, elementUpdates) {
+                return object[columnConfig.dataProperty] ? object[columnConfig.dataProperty] : '';
+            },
+
+            /**
+             * Returns the formatted property value for the column key
+             * @private
+             */
+            _getDataTableFormattedValue: function(object, columnConfig, elementUpdates) {
+                var value = object[columnConfig.dataProperty] ? object[columnConfig.dataProperty] : '';
+                if (columnConfig.dataFormatter) {
+                    value = columnConfig.dataFormatter(value);
+                }
+                return value;
+            },
+
+            /**
+             * Updates item list
+             * @private
+             */
+            _updateItems: function(event, newValue) {
+                this.async(function () {
+                    var row = (this.$$('#items_repeat').modelForElement(event.target) || {}).rowIndex;
+                    var column = event.model.column.dataProperty;
+                    if (column) {
+                        this.set('items.' + row + '.' + column, newValue.value);
+                        //Check rendered items to avoid performance issues with multiple evaluations with elementUpdates property.
+                        if (this.renderedElementsCounter >= this.items.length) {
+                            this.elementUpdates = this.elementUpdates++;
+                        }
+                    }
+                });
+            },
+
+            renderedCountChanged: function(_event) {
+                this.renderedElementsCounter = this.renderedElementsCounter + 1;
+            },
+
+            /**
+             * Bulk check/uncheck all data table items
+             * @private
+             */
+            _selectAllToggle: function(event) {
+                var isChecked = event.target.checked;
+                var checkboxes = Polymer.dom(this.root).querySelectorAll('paper-checkbox');
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = isChecked;
+                });
+            },
+
+            /**
+             * Adds or removes items from selectedItems array
+             * @private
+             */
+            _addRemoveSelectedItem: function(event) {
+                var item = JSON.parse(event.currentTarget.dataset.item || '{}');
+                if ( this.config.enableSelection ) {
+                    var isChecked = event.target.checked;
+                    if (isChecked && item) {
+                        this.push('selectedItems', item);
+                    } else {
+                        this.splice('selectedItems', item, 1);
+                    }
+                } else if ( this.config.enableSingleSelection ) {
+                    this.set('selectedItem', item);
+                    const $rows = Polymer.dom(this.root).querySelectorAll('.single-selectable');
+                    $rows.forEach( _row => _row.classList.remove('selected') );
+                    event.currentTarget.classList.add('selected');
+                }
+            },
+
+            /**
+             * Executes an external action with the item as parameter
+             * @private
+             */
+            _executeAction: function(event) {
+                var rowIndex = (this.$$('#items_repeat').modelForElement(event.target) || {}).rowIndex;
+                var actionIndex = event.model.index;
+                this.config.actions.handlers[actionIndex].action(this.items[rowIndex]);
+                this.$$('#paper_menu_' + rowIndex).close();
+            },
+
+            /*
+             * -------------------------------------------
+             *          Polymer Lifecycle Callbacks
+             * -------------------------------------------
+             */
+
+            /**
+             * Called after the component has been attached to the light DOM.
+             */
+            attached: function() {
+                /*
+                 * Polymer currently not supporting mixins directly on @media definitions, the following `hack`
+                 * will allow us to use the component trough regular mixins without noticing this problem. Once
+                 * Polymer fix this issue the following code will become obsolete.
+                 *
+                 * Note: This async function could be safely deleted without breaking any table functionality
+                 * nor styling. After it's deletion the only remaining work will be to replace any
+                 * --responsive-breakpoint definition with a regular numeric value E.g. `768px`
+                 */
+                this.async(function() {
+                    var styleTag = this._customStyle;
+                    if (styleTag) {
+                        var customId = 'eip-dt-' + (Math.random() * 1e8 | 0);
+                        var cssSelectorPrefix = '[data-custom-id="' + customId + '"]';
+                        var breakPoint = this._styleProperties['--responsive-breakpoint'] || '768px';
+
+                        styleTag.innerText = styleTag.innerText.replace('calc(var(--responsive-breakpoint) + 1px)', (parseInt(breakPoint) + 1 ) + 'px');
+                        styleTag.innerText = styleTag.innerText.replace('var(--responsive-breakpoint)', breakPoint);
+                        styleTag.innerText = styleTag.innerText.replace('.table-container.bp-data-table ', cssSelectorPrefix + ' .table-container.bp-data-table ');
+                        styleTag.innerText = styleTag.innerText.replace('*.bp-data-table ', '* ');
+
+                        var customStyles = document.createElement('div');
+                        customStyles.innerHTML = '<style>' + styleTag.innerText + '</style>';
+                        this.setAttribute('data-custom-id', customId);
+                        this.appendChild(customStyles);
+
+                        var maxHeight = this._styleProperties['--max-body-height'];
+                        this.set('config.maxBodyHeight', !!maxHeight);
+                    }
+                });
+            }
+
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,351 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+
+<link rel="import" href="../bp-login/bp-login.html">
+<link rel="import" href="../bp-sidebar/bp-sidebar.html">
+<link rel="import" href="../bp-search/bp-search.html">
+<link rel="import" href="../bp-search/bp-search-categories.html">
+<link rel="import" href="bp-routes.html">
+
+<dom-module id="bp-navigation">
+    <template>
+        <style is="custom-style" include="iron-flex iron-flex-factors">
+            app-header {
+                background-color: #d32f2f;
+                color: #fff;
+            }
+
+            app-header paper-icon-button {
+                --paper-icon-button-ink-color: #fff;
+                margin-left: 16px;
+            }
+
+            app-drawer-layout {
+                --app-drawer-width: 100px;
+                --app-drawer-layout-content-transition: margin 0.2s;
+            }
+
+            app-drawer {
+                --app-drawer-width: 100px;
+                --app-drawer-content-container: {
+                    background-color: #ffffff;
+                }
+            }
+
+            div[main-title] {
+                flex: initial !important;
+                margin-right: 16px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .drawer-content {
+                margin-top: 80px;
+                height: calc(100% - 78px);
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            .user-lbl {
+                margin: 2px 4px 0 4px;
+                font-size: 14px;
+                text-transform: capitalize;
+            }
+
+            .logo {
+                margin: 7px 0 0 20px;
+            }
+
+            .logo-small {
+                display: none;
+            }
+
+            ::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            /* Track */
+            ::-webkit-scrollbar-track {
+                -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                -webkit-border-radius: 10px;
+                border-radius: 10px;
+            }
+
+            /* Handle */
+            ::-webkit-scrollbar-thumb {
+                -webkit-border-radius: 10px;
+                border-radius: 10px;
+                background: rgba(255, 0, 0, 0.8);
+                -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+            }
+
+            ::-webkit-scrollbar-thumb:window-inactive {
+                background: rgba(255, 0, 0, 0.4);
+            }
+
+            #login {
+                padding: 8px;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+
+            @media screen and (max-width: 768px) {
+                .logo {
+                    display: none;
+                }
+
+                .logo-small {
+                    display: block;
+                }
+            }
+
+            @media screen and (max-width: 640px) {
+                .container {
+                    margin-left: 0;
+                    padding: 16px;
+                }
+
+                .user-info {
+                    display: none !important;
+                }
+            }
+        </style>
+
+        <app-location use-hash-as-path route="{{route}}"></app-location>
+        <app-route
+                route="{{route}}"
+                pattern="/:page"
+                data="{{routeData}}"
+                tail="{{subroute}}">
+        </app-route>
+
+        <iron-media-query query="(max-width: 640px)" query-matches="{{_isSmallScreenSize}}"></iron-media-query>
+
+        <app-header-layout>
+            <app-header fixed effects="waterfall" slot="header">
+                <app-toolbar>
+                    <paper-icon-button id="toggle" icon="menu" on-tap="_toggleSidebar"></paper-icon-button>
+                    <div main-title>
+                        <img class="logo" src="../../images/logos/header.png" alt="Brake Parts">
+                        <img class="logo-small" src="../../images/logos/header-small.png" alt="Brake Parts">
+                    </div>
+
+                    <div id="bp_search_container" class$="[[_computeSearchBarContainerClass(_isSmallScreenSize)]]">
+                        <bp-search
+                                id="eip_search"
+                                container="bp_search_container"
+                                search-categories-element="[[searchCategoriesElement]]"
+                                search-text="{{searchText}}"
+                                active-category="{{activeCategory}}"
+                                search-categories="{{searchCategories}}"
+                                disabled="{{searchDisabled}}"
+                                top-item>
+                        </bp-search>
+                    </div>
+
+                    <template is="dom-if" if="[[isLoggedIn]]">
+                        <paper-item>
+                            <div class="horizontal layout user-info">
+                                <iron-icon icon="social:person"></iron-icon>
+                                <div class="user-lbl">[[loggedInUser.profile.firstName]]
+                                    [[loggedInUser.profile.lastName]]
+                                </div>
+                            </div>
+                            <paper-icon-button
+                                    id="logout_btn"
+                                    icon="power-settings-new"
+                                    on-tap="_logout">
+                            </paper-icon-button>
+                            <paper-tooltip for="logout_btn" position="bottom">Log out</paper-tooltip>
+                        </paper-item>
+                    </template>
+
+                    <template is="dom-if" if="[[!isLoggedIn]]">
+                        <paper-item>
+                            <paper-icon-button
+                                    id="login_btn"
+                                    icon="social:person-outline"
+                                    on-tap="_showLogin">
+                            </paper-icon-button>
+                            <paper-tooltip for="login_btn" position="bottom">Ingresar</paper-tooltip>
+                        </paper-item>
+                    </template>
+                </app-toolbar>
+            </app-header>
+
+            <app-drawer-layout id="drawerLayout">
+                <app-drawer slot="drawer" on-opened-changed="_resizeContent">
+                    <div class="drawer-content">
+                        <bp-sidebar id="sidebar"></bp-sidebar>
+                    </div>
+                </app-drawer>
+
+                <div class="container">
+                    <iron-pages
+                            selected="[[page]]"
+                            attr-for-selected="name"
+                            fallback-selection="view404"
+                            role="main">
+
+                        <bp-home
+                                id="home"
+                                name="home">
+                        </bp-home>
+
+                        <bp-product-directory
+                                id="product_directory"
+                                name="products"
+                                current-product="{{currentProduct}}">
+                        </bp-product-directory>
+
+                        <bp-product-detail
+                                id="product_detail"
+                                name="product-detail"
+                                current-product="[[currentProduct]]">
+                        </bp-product-detail>
+
+                    </iron-pages>
+                </div>
+            </app-drawer-layout>
+        </app-header-layout>
+
+        <bp-search-categories
+                id="bp_search_categories"
+                active-category="{{activeCategory}}"
+                search-text="{{searchText}}"
+                search-categories="{{searchCategories}}">
+        </bp-search-categories>
+
+        <bp-login id="bp_login"></bp-login>
+    </template>
+
+    <script>
+      Polymer({
+        is: 'bp-navigation',
+
+        properties: {
+          _isSmallScreenSize: {
+            type: Boolean,
+            value: false
+          },
+          isLoggedIn: {
+            type: Boolean,
+            value: false
+          },
+          loggedInUser: {
+            type: Object,
+            notify: true,
+            value: null
+          },
+          searchText: {
+            type: String,
+            notify: true,
+            value: ""
+          },
+          searchCategories: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          searchCategoriesElement: {
+            type: Object,
+            value: function() {
+              return this.$.eip_search_categories;
+            }
+          },
+          activeCategory: {
+            type: Object,
+            notify: true
+          },
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+          }
+        },
+
+        // Listeners
+        listeners: {
+          "open-search-categories": "_handleSearchCategoriesOpenEvent",
+          "close-search-categories": "_handleSearchCategoriesCloseEvent",
+          "update-search-categories" : "_handleSearchCategoriesUpdateEvent",
+        },
+
+        observers: [
+          '_onRoutePageChanged(routeData.page)',
+        ],
+
+        _onRoutePageChanged: function(_page) {
+          this.page = _page || 'home';
+        },
+
+        _pageChanged: function(page) {
+          const route = routes.find(_route => _route.path === page);
+          if (!route) {
+            this._showPage404();
+            return;
+          }
+          const resolvedPageUrl = this.resolveUrl(route.componentUrl);
+          this.importHref(resolvedPageUrl, this._setSelectedMenu, this._showPage404, true);
+        },
+
+        _setSelectedMenu: function() {
+          if (this.page) {
+            this.$.sidebar.selectMenu(this.page);
+          }
+        },
+
+        _showPage404: function() {
+          this.page = 'view404';
+        },
+
+        _resizeContent: function() {
+          if (this.$.product_directory) {
+            // this.$.product_directory.fire('sidebar-resize');
+          }
+        },
+
+        _toggleSidebar: function() {
+          const drawerLayout = this.$.drawerLayout;
+          if (drawerLayout.forceNarrow || !drawerLayout.narrow) {
+            drawerLayout.forceNarrow = !drawerLayout.forceNarrow;
+          } else {
+            drawerLayout.drawer.toggle();
+          }
+        },
+
+        _computeSearchBarContainerClass: function(_isSmallScreenSize) {
+          return _isSmallScreenSize ? 'middle justify-center flex-2' : 'justify-center flex-2';
+        },
+
+        _logout: function() {
+          this.set('loggedInUser', null);
+          localStorage.removeItem('bpSessionData');
+        },
+
+        _showLogin: function() {
+          this.$.bp_login.open();
+        }
+      });
+    </script>
+</dom-module>

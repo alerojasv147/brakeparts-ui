@@ -1,0 +1,35 @@
+{
+  "name": "eip-data-table",
+  "version": "1.0.0",
+  "description": "A responsive data table",
+  "authors": [
+    "dwalters",
+    "arojas",
+    "imartinez"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer",
+    "responsive-table",
+    "data-table"
+  ],
+  "main": "eip-data-table.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://scm.evolveip.net/EvolveElements/eip-data-table.git"
+  },
+  "license": "",
+  "homepage": "",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "paper-checkbox": "PolymerElements/paper-checkbox#1.4.2"
+  },
+  "devDependencies": {
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
+}

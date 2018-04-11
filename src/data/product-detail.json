@@ -1,0 +1,46 @@
+{
+  "type": "getResponse",
+  "successful": true,
+  "payload": {
+    "id": 1,
+    "productCode": "SW-N1224",
+    "name": "Test Name",
+    "group": "Test Group",
+    "width": "1.5'",
+    "height": "2.5'",
+    "length": "3.5'",
+    "imageUrl": "./images/products/product1.png",
+    "autoPartList": [
+      {
+        "oemCode": "OEM-Test-1",
+        "type": "Type Test 1",
+        "vehicle": "Toyota",
+        "brand": "Toyo",
+        "price": "5.00",
+        "stock": "10",
+        "imageUrl": "./images/products/product-detail.png",
+        "description": "AUX EMB NISSAN CIVILIAN PATHFINDER TERRANO URVAN E24 ATLAS KING CAB MOD 80-97"
+      },
+      {
+        "oemCode": "OEM-Test-2",
+        "type": "Type Test 2",
+        "vehicle": "Toyota",
+        "brand": "TTO",
+        "price": "3.00",
+        "stock": "10",
+        "imageUrl": "./images/products/product-detail.png",
+        "description": "AUX EMB NISSAN CIVILIAN PATHFINDER TERRANO URVAN E24 ATLAS KING CAB MOD 80-97"
+      },
+      {
+        "oemCode": "OEM-Test-3",
+        "type": "Type Test 3",
+        "vehicle": "Mitsubishi",
+        "brand": "Mitsu",
+        "price": "5.00",
+        "stock": "10",
+        "imageUrl": "./images/products/product-detail.png",
+        "description": "AUX EMB NISSAN CIVILIAN PATHFINDER TERRANO URVAN E24 ATLAS KING CAB MOD 80-97"
+      }
+    ]
+  }
+}

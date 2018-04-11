@@ -1,0 +1,605 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<!--<link rel="import" href="../../bower_components/vaadin-date-picker/vaadin-date-picker.html">-->
+
+<!--
+`bp-editable-field` simplifies the UI showing a simple label instead of an input or a dropdown.
+On text edit mode offers the possibility to rollback changes on cancel or simply by pressing th escape key.
+
+`eip-data-table` also supports CSS mixins for customization.
+
+Example:
+
+    <style is="custom-style">
+        bp-editable-field {
+            --edit-input-border-color: rgba(0, 155, 195, 1);
+            --edit-input-background: rgba(0, 155, 195, .1);
+            --cancel-action: #000;
+        }
+    </style>
+
+    // Text input
+
+    <bp-editable-field
+        type="text"
+        value="{{value}}">
+    </bp-editable-field>
+
+    // Dropdown list
+
+    <bp-editable-field
+        type="dropdown"
+        items="[[items]]"
+        selected-item="2"
+        value="{{value}}">
+    </bp-editable-field>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--edit-input-border-color` | Sets the edit field border color on edit mode | #F47920
+`--edit-input-background` | Sets the background for edit field on edit mode | rgba(255, 235, 59, 0.2)
+`--cancel-action` | Sets the edit field cancel button color on edit mode | #000
+
+@group EvolveElements
+@demo demo/index.html
+-->
+
+<dom-module id="bp-editable-field">
+    <template>
+        <style is="custom-style">
+
+            * {
+                box-sizing: border-box;
+            }
+
+            :root {
+                display: block;
+                position: relative;
+            }
+
+            paper-item {
+                cursor: pointer;
+            }
+
+            paper-input:hover,
+            paper-input[focused] {
+                background-color: var(--edit-input-background, rgba(255, 235, 59, 0.2));
+            }
+
+            paper-input {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 36px;
+                width: 100%;
+                --paper-input-container: {
+                    padding: 8px 0;
+                };
+                --paper-input-container-underline: {
+                    border-color: transparent;
+                };
+                --paper-input-container-underline-focus: {
+                    border-color: var(--edit-input-border-color, #F47920);
+                };
+                --paper-input-container-input: {
+                    padding: 0 36px 2px 8px;
+                    box-sizing: border-box;
+                }
+            }
+
+            paper-icon-button.action {
+                width: 36px;
+                height: 36px;
+                padding: 8px;
+                margin-top: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+                opacity: .5;
+                z-index: 1;
+
+                -webkit-transition: all .3s ease-in-out;
+                -moz-transition: all .3s ease-in-out;
+                -ms-transition: all .3s ease-in-out;
+                -o-transition: all .3s ease-in-out;
+                transition: all .3s ease-in-out;
+            }
+
+            paper-input ~ paper-icon-button.action {
+                opacity: 1;
+            }
+
+            paper-icon-button.action + paper-icon-button.action {
+                right: 36px;
+            }
+
+            paper-dropdown-menu {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 36px;
+                width: 100%;
+                --paper-dropdown-menu: {
+                    width: 100%;
+                    height: 36px;
+                };
+                --paper-dropdown-menu-input: {
+                    background-color: var(--edit-input-background, rgba(255, 235, 59, 0.2));
+                    height: 36px;
+                    box-sizing: border-box;
+                };
+                --paper-input-container-underline: {
+                    border-color: var(--edit-input-border-color, #F47920);
+                    border-bottom-width: 2px;
+                };
+                --paper-input-container-underline-focus: {
+                    border-color: var(--edit-input-border-color, #F47920);
+                };
+            }
+
+            vaadin-date-picker {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 36px;
+                width: 100%;
+                --paper-input-container: {
+                    padding: 8px 0;
+                };
+                --paper-input-container-underline: {
+                    border-color: transparent;
+                };
+                --paper-input-container-underline-focus: {
+                    border-color: var(--edit-input-border-color, #F47920);
+                };
+                --paper-input-container-input: {
+                    padding: 0 0 2px 8px;
+                    box-sizing: border-box;
+                }
+            }
+
+            .action.cancel {
+                color: var(--cancel-action, #000);
+            }
+
+            .content-label {
+                position: absolute;
+                top: 2px;
+                left: 0;
+                line-height: 36px;
+                padding: 0 8px;
+
+                width: calc(100% - 36px);
+                height: 36px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            .editable-field {
+                position: relative;
+                max-width: 500px;
+                height: 36px;
+            }
+
+            .label-container {
+                border-bottom: 2px solid #f2f2f2;
+                height: 36px;
+                position: relative;
+
+                -webkit-transition: all .3s ease-in-out;
+                -moz-transition: all .3s ease-in-out;
+                -ms-transition: all .3s ease-in-out;
+                -o-transition: all .3s ease-in-out;
+                transition: all .3s ease-in-out;
+            }
+
+            .label-container:hover {
+                background-color: #f2f2f2;
+                border-bottom: 2px solid #999;
+            }
+
+            .label-container:hover > paper-icon-button.action {
+                opacity: 1;
+            }
+
+        </style>
+
+        <section class="editable-field">
+
+            <!-- Text Input (editMode && inputType == "text" -->
+            <template is="dom-if" if="{{_isTextInputEditMode(type, editMode)}}">
+                <paper-input
+                    id="editable_input"
+                    no-label-float
+                    on-blur="_onBlur"
+                    on-keyup="_onKeyup"
+                    label="[[label]]"
+                    value="{{value::input}}">
+                </paper-input>
+
+                <paper-icon-button
+                    suffix
+                    id="clear"
+                    icon="icons:clear"
+                    class="action cancel"
+                    on-tap="clearValue">
+                </paper-icon-button>
+
+                <paper-tooltip for="clear">Clear</paper-tooltip>
+            </template>
+
+            <!-- Text Input (editMode && inputType == "date" -->
+            <!--<template is="dom-if" if="{{_isDatePickerEditMode(type, editMode)}}">-->
+                <!--<vaadin-date-picker-->
+                    <!--id="editable_date_picker"-->
+                    <!--on-overlay-closed="_onDatePickerChanged"-->
+                    <!--no-label-float="true"-->
+                    <!--value="{{currentValue}}">-->
+                <!--</vaadin-date-picker>-->
+            <!--</template>-->
+
+            <!-- Dropdown (editMode && inputType == "dropdown" -->
+            <template is="dom-if" if="{{_isDropdownEditMode(type, editMode)}}">
+                <paper-dropdown-menu
+                        on-opened-changed="_openedChanged"
+                        id="editable_dropdown"
+                        no-label-float noink>
+                    <paper-listbox
+                        class="dropdown-content"
+                        selected="{{currentValue}}"
+                        attr-for-selected="value" >
+                        <template is="dom-repeat" items="{{selectableItems}}" as="item">
+                            <paper-item value="{{item.value}}">{{item.label}}</paper-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </template>
+
+            <!-- Label only (editMode == false) -->
+            <template is="dom-if" if="{{!editMode}}">
+                <div class="label-container">
+
+                    <div class="content-label" id="value" on-tap="enableEditableMode">
+                        [[_computedValue]]
+                    </div>
+                    <paper-tooltip for="value">Click to edit</paper-tooltip>
+
+                    <paper-icon-button
+                        id="edit"
+                        icon="icons:create"
+                        class="action"
+                        on-tap="enableEditableMode">
+                    </paper-icon-button>
+                    <paper-tooltip for="edit">Edit</paper-tooltip>
+
+                </div>
+            </template>
+        </section>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'bp-editable-field',
+
+            /*
+             * -------------------------------------------
+             *              Polymer Definitions
+             * -------------------------------------------
+             */
+            properties: {
+                type: {
+                    type: String,
+                    notify: true,
+                    value: 'text'
+                },
+                value: {
+                    type: String,
+                    value: '',
+                    notify: true
+                },
+                originalValue: {
+                    type: String,
+                    value: ''
+                },
+                editMode: {
+                    type: Boolean,
+                    value: false,
+                    notify: true
+                },
+                items: {
+                    type: Array,
+                    value: []
+                },
+                selectableItems: {
+                    type: Array,
+                    computed: '_computeSelectableItems(items)'
+                },
+                currentValue: {
+                    type: String,
+                    notify: true,
+                    observer: '_currentValueChanged'
+                },
+                formatter: {
+                    type: Object,
+                    value: {}
+                },
+                _computedValue: {
+                    type: String,
+                    computed: '_formattedValue(value)'
+                }
+            },
+
+            /*
+             * -------------------------------------------
+             *              Public Functions
+             * -------------------------------------------
+             */
+
+            // Clears the current value
+            clearValue: function () {
+                this.set('value', '');
+                this.focusEditableField();
+            },
+
+            // Restores original value to the field
+            discardChanges: function () {
+                this.set('value', this.originalValue);
+                this.disableEditableMode();
+            },
+
+            // Disables edit mode
+            disableEditableMode: function () {
+                this.set('editMode', false);
+            },
+
+            // Enables and focuses the element
+            enableEditableMode: function () {
+                this.set('originalValue', this.value);
+                this.set('editMode', true);
+                this.focusEditableField();
+            },
+
+            openDropdownField: function () {
+                var _this = this;
+                if (!this.$$('#editable_dropdown')) {
+                    this.async(this.openDropdownField, 50);
+                } else {
+                    this.$$('#editable_dropdown').open();
+                }
+            },
+
+            focusInputField: function () {
+                if (!this.$$('#editable_input')) {
+                    this.async(this.focusInputField, 50);
+                } else {
+                    this.$$('#editable_input').focus();
+                }
+            },
+
+            openDatePickerField: function () {
+                if (!this.$$('#editable_date_picker')) {
+                    this.async(this.openDatePickerField, 50);
+                } else {
+                    this.$$('#editable_date_picker').open();
+                }
+            },
+
+            // Focuses the element according to it's type
+            focusEditableField: function () {
+                var _this = this;
+                switch (this.type) {
+                    case 'text':
+                        this.focusInputField();
+                        break;
+                    case 'dropdown':
+                        this.openDropdownField();
+                        break;
+                    case 'date':
+                        this.openDatePickerField();
+                        break;
+                }
+            },
+
+            // Commit input changes
+            saveChanges: function () {
+                this.disableEditableMode();
+                this._fireSave();
+            },
+
+            _fireSave: function () {
+                this.set('originalValue', this.value);
+                this.fire('save', {
+                    value: this.value
+                });
+            },
+
+            /*
+             * -------------------------------------------
+             *              Private Functions
+             * -------------------------------------------
+             */
+
+            _formattedValue: function () {
+                if (this.formatter && typeof this.formatter.format === 'function') {
+                    return this.formatter.format(this.value);
+                }
+                return this.value;
+            },
+
+            /**
+             * Returns an array based on _items array, where is could contain Strings or Objects.
+             * @param {Array} _items - The items.
+             * @private
+             **/
+            _computeSelectableItems: function (_items) {
+                var newItems = [];
+                if (_items) {
+                    for (var i = 0; i < _items.length; i++) {
+                        if (typeof _items[i] === 'object'
+                            && typeof _items[i].label !== 'undefined'
+                            && typeof _items[i].value !== 'undefined') {
+                            newItems.push(_items[i]);
+                        } else {
+                            newItems.push({label: _items[i], value: _items[i]});
+                        }
+                    }
+                }
+                return newItems;
+            },
+
+            /**
+             * Helper function to determinate if its a dropdown on `edit mode`
+             * @param {boolean} editMode
+             * @private
+             */
+            _isDropdownEditMode: function (elementType, editMode) {
+                return elementType === 'dropdown' && editMode;
+            },
+
+            /**
+             * Helper function to determinate if its a text input on `edit mode`
+             * @param {boolean} editMode
+             * @private
+             */
+            _isTextInputEditMode: function (elementType, editMode) {
+                return elementType === 'text' && editMode;
+            },
+
+            /**
+             * Helper function to determinate if its a date picker field on `edit mode`
+             * @param {boolean} editMode
+             * @private
+             */
+            _isDatePickerEditMode: function (elementType, editMode) {
+                return elementType === 'date' && editMode;
+            },
+
+            /**
+             * Handles focus lost to decide whether it commits the value or not
+             * @private
+             */
+            _onBlur: function () {
+                this.async(function () {
+                    switch (this.type) {
+                        case 'text':
+                            if (!this.$$('#editable_input').focused) {
+                                this.discardChanges();
+                            }
+                            break;
+                        case 'dropdown':
+                            break;
+                    }
+                }, 100);
+            },
+
+            /**
+             * Special handling for `Enter` and `ESC` keys
+             * @param {Event} event keyup event
+             * @private
+             */
+            _onKeyup: function (event) {
+                var key = event.key;
+
+                switch (key) {
+                    case 'Enter':
+                        this.saveChanges();
+                        break;
+                    case 'Escape':
+                        this.discardChanges();
+                        break;
+                    default:
+                        break;
+                }
+            },
+
+            /**
+             * Handles whenever the dropdown is opened or closed
+             * @param {Event} event
+             * @private
+             */
+            _openedChanged: function (event) {
+                this.async(function () {
+                    if (!event.target.opened) {
+                        this._currentValueChanged();
+                        this.disableEditableMode();
+                    }
+                }, 100);
+            },
+
+            /**
+             * Handles focus lost to decide whether it commits the value or not
+             * @private
+             */
+            _onDatePickerChanged: function () {
+                this.async(function () {
+                    var datePickerElement = this.$$('#editable_date_picker');
+                    if (datePickerElement && !datePickerElement.opened) {
+                        this.disableEditableMode();
+                    }
+                }, 100);
+            },
+
+            /**
+             * Sets the value whenever the dropdown change its current selected option
+             * @private
+             */
+            _currentValueChanged: function () {
+                this.set('value', this.currentValue ? '' + this.currentValue : '');
+                this._fireSave();
+                if (this.type === 'date') {
+                    this._onDatePickerChanged();
+                }
+            },
+
+            /*
+             * -------------------------------------------
+             *          Polymer Lifecycle Callbacks
+             * -------------------------------------------
+             */
+
+            // Called after the component has been attached to the light DOM.
+            attached: function () {
+                this.async(function () {
+
+                    switch (this.type) {
+                        case 'text':
+                            break;
+                        case 'dropdown':
+                            if (this.currentValue) {
+                                this.set('value', '' + this.currentValue);
+                            } else if (this.value) {
+                                this.set('currentValue', '' + this.value);
+                            }
+                            break;
+                        case 'date':
+                            if (this.currentValue) {
+                                this.set('value', '' + this.currentValue);
+                            } else if (this.value) {
+                                this.set('currentValue', '' + this.value);
+                            }
+                            break;
+                    }
+                });
+            }
+
+        });
+    </script>
+</dom-module>

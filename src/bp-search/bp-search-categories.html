@@ -1,0 +1,241 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+
+<link rel="import" href="../bp-autocomplete-input/bp-autocomplete-input.html">
+
+<dom-module id="bp-search-categories">
+    <template>
+        <style>
+            :host {
+                z-index: 9999 !important;
+            }
+
+            #advanced_search_options {
+                background-color: white;
+                position: fixed;
+                overflow: auto;
+                display: block;
+                margin: 0;
+                width: 100%;
+            }
+
+            #advanced_search_options [hidden] {
+                display: none !important;
+            }
+        </style>
+
+        <paper-dialog id="advanced_search_options" dynamic-align>
+            <div class="horizontal layout">
+                <bp-autocomplete-input
+                        id="piece_autocomplete"
+                        label="Grupo"
+                        value="[[currentPiece.name]]"
+                        search-text="[[currentPiece.name]]"
+                        text-property="name"
+                        value-property="id"
+                        list="[[pieceList]]"
+                        selected-item="{{currentPiece}}">
+                </bp-autocomplete-input>
+                <bp-autocomplete-input
+                        id="vehicle_autocomplete"
+                        label="Vehiculo"
+                        value="[[currentVehicle.name]]"
+                        search-text="[[currentVehicle.name]]"
+                        text-property="name"
+                        value-property="id"
+                        list="[[vehicleList]]"
+                        selected-item="{{currentVehicle}}"
+                        on-iron-select="_onVehicleSelected">
+                </bp-autocomplete-input>
+            </div>
+
+            <div class="horizontal layout">
+                <bp-autocomplete-input
+                        id="model_autocomplete"
+                        label="Modelo"
+                        value="[[currentModel.name]]"
+                        search-text="[[currentModel.name]]"
+                        text-property="name"
+                        value-property="modelId"
+                        list="[[modelList]]"
+                        selected-item="{{currentModel}}"
+                        on-iron-select="_onModelSelected">
+                </bp-autocomplete-input>
+                <bp-autocomplete-input
+                        id="year_autocomplete"
+                        label="Año"
+                        value="[[currentYear.year]]"
+                        search-text="[[currentYear.year]]"
+                        text-property="year"
+                        value-property="year"
+                        list="[[yearList]]"
+                        selected-item="{{currentYear}}"
+                        on-iron-select="_onYearSelected">
+                </bp-autocomplete-input>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+      Polymer({
+        is: 'bp-search-categories',
+
+        /*
+         * -------------------------------------------
+         *              Polymer Definitions
+         * -------------------------------------------
+         */
+        properties: {
+          dialog: {
+            type: Object,
+            value: function() {
+              return this.$.advanced_search_options;
+            }
+          }
+        },
+
+        listeners: {
+          'iron-overlay-closed': '_handleDialogOverlayClosed'
+        },
+
+        /*
+         * -------------------------------------------
+         *              Element Functions
+         * -------------------------------------------
+         */
+
+        /**
+         * Handle the dialog overlay closed event.
+         */
+        _handleDialogOverlayClosed: function() {
+          this.fire('close-search-categories');
+        },
+
+        /**
+         * Handle the key down event figured in the search bar.
+         * @param _event
+         */
+        _handleInputKeyDown: function(_event) {
+          let keyCode = _event.which || _event.keyCode;
+          switch (keyCode) {
+            case 13:
+              this.close();
+              break;
+            default:
+              break;
+          }
+        },
+
+        /**
+         * Clear the search box and give the input focus
+         */
+        clear: function() {
+          // If there is search text
+          if (this.searchText && this.searchText.length > 0) {
+            this.set('searchText', '');
+            this.set('activeCategory', null);
+            this.$.search_input_inner.focus();
+          }
+          else {
+            // If there is an active category, clear it and focus the input container
+            if (this.activeCategory) {
+              this.set('activeCategory', null);
+              this.$.search_input_inner.focus();
+            }
+            // Otherwise, close the category window.
+            else {
+              this.close();
+            }
+          }
+        },
+
+        /**
+         * Open this window.
+         */
+        open: function() {
+          if (this.$.advanced_search_options) {
+            this.$.advanced_search_options.open();
+            this.async(function() {
+              this.$.search_input_inner.focus();
+            }, 500);
+
+            this.fire('search-categories-opened');
+          }
+        },
+
+        /**
+         * Close this window.
+         */
+        close: function() {
+          if (this.$.advanced_search_options) {
+            this.$.advanced_search_options.close();
+            this.fire('search-categories-closed');
+          }
+        },
+
+        /**
+         * Handle a category
+         * @param _event
+         */
+        _handleCategorySelection: function(_event) {
+          let model = _event.model;
+          let categoryIndex = -1;
+
+          if (_event.target) {
+            categoryIndex = _event.target.getAttribute('data-category-index');
+          }
+
+          if (model) {
+            let category = model.item;
+            this.set('activeCategory', {});
+            this.set('activeCategory', category);
+
+            // Reset all categories to not active
+            let categoriesCount = 0;
+
+            if (this.searchCategories) {
+              categoriesCount = this.searchCategories.length;
+            }
+
+            if (categoriesCount > 0) {
+              for (let x = 0; x < categoriesCount; x++) {
+                this.set('searchCategories.' + x + '.categoryActive', false);
+              }
+            }
+
+            // Set the active category
+            this.set('searchCategories.' + categoryIndex + '.categoryActive', true);
+          }
+
+          this.close();
+        },
+
+        /**
+         * Compute the sear
+         * @param _category
+         */
+        _computeSearchIconVisibility: function(_category) {
+          let hidden = false;
+          if (_category && _category.categoryName) {
+            hidden = true;
+          }
+
+          return (hidden);
+        },
+
+        /*
+         * -------------------------------------------
+         *              Polymer Functions
+         * -------------------------------------------
+         */
+
+        /**
+         * Called after the component has been attached to the light DOM
+         */
+        attached: function() {
+        }
+      });
+    </script>
+</dom-module>

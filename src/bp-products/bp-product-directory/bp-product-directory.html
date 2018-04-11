@@ -1,0 +1,187 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+
+<link rel="import" href="../../bp-autocomplete-input/bp-autocomplete-input.html">
+<link rel="import" href="../bp-product-card/bp-product-card.html">
+<link rel="import" href="../../bp-web-service-handler/bp-web-service-handler.html">
+
+<dom-module id="bp-product-directory">
+    <template>
+        <style include="iron-flex">
+            bp-autocomplete-input {
+                width: 200px;
+            }
+            bp-autocomplete-input:not(:last-child) {
+                margin-right: 16px;
+            }
+        </style>
+
+        <section id="filters_section" class="vertical layout">
+            <header>
+                BUSCAR PRODUCTOS
+            </header>
+
+        </section>
+
+        <section id="list_section">
+            <iron-list
+                    id="product_list"
+                    items="[[productList]]"
+                    as="product"
+                    grid
+                    scroll-target="document">
+                <template>
+                    <bp-product-card
+                            product="[[product]]"
+                            tabindex$="[[tabIndex]]"
+                            selected-page="{{selectedPage}}"
+                            on-view-product-details="_onViewProductDetails">
+                    </bp-product-card>
+                </template>
+            </iron-list>
+
+            <iron-scroll-threshold
+                    id="scrollTheshold"
+                    lower-threshold="500"
+                    on-lower-threshold="_onLowerThreshold"
+                    scroll-target="document">
+            </iron-scroll-threshold>
+        </section>
+
+        <bp-web-service-handler
+                id="product_list_service"
+                web-service-host-name="src/data"
+                web-service-uri="product-list.json"
+                on-get-response-success="_handleProductListGetResponseSuccess"
+                on-get-response-fail="_handleProductListGetResponseFail">
+        </bp-web-service-handler>
+
+        <bp-web-service-handler
+                id="vehicle_service"
+                web-service-host-name="src/data"
+                web-service-uri="brand-list.json"
+                on-get-response-success="_handleVehicleGetResponseSuccess"
+                on-get-response-fail="_handleVehicleGetResponseFail">
+        </bp-web-service-handler>
+
+        <bp-web-service-handler
+                id="model_service"
+                web-service-host-name="src/data"
+                web-service-uri="model-list.json"
+                on-get-response-success="_handleModelGetResponseSuccess"
+                on-get-response-fail="_handleModelGetResponseFail">
+        </bp-web-service-handler>
+
+        <bp-web-service-handler
+                id="year_service"
+                web-service-host-name="src/data"
+                web-service-uri="year-list.json"
+                on-get-response-success="_handleYearGetResponseSuccess"
+                on-get-response-fail="_handleYearGetResponseFail">
+        </bp-web-service-handler>
+    </template>
+
+    <script>
+      Polymer({
+        is: 'bp-product-directory',
+
+        properties: {
+          currentProduct: {
+            type: Object,
+            notify: true,
+            value: {}
+          },
+          productList: {
+            type: Array,
+            notify: true,
+            value: []
+          },
+          selectedPage: {
+            type: String,
+            notify: true,
+            value: ''
+          }
+        },
+
+        listeners: {
+          'sidebar-resize': '_onSidebarResized'
+        },
+
+        ready: function() {
+          this.$.product_list_service.generateGetRequest();
+          this.$.vehicle_autocomplete.isLoading = true;
+          this.$.year_autocomplete.isLoading = true;
+          this.$.vehicle_service.generateGetRequest();
+          this.$.year_service.generateGetRequest();
+        },
+
+        _handleProductListGetResponseSuccess: function(_event) {
+          const payload = _event.detail.payload;
+          if (payload) {
+            payload.productList.forEach(_product => {
+              this.push('productList', _product);
+            });
+            this.$.scrollTheshold.clearTriggers();
+          }
+        },
+
+        _handleVehicleGetResponseFail: function(_event) {
+          this.$.vehicle_autocomplete.isLoading = false;
+        },
+
+        _handleVehicleGetResponseSuccess: function(_event) {
+          const payload = _event.detail.payload;
+          if (payload) this.set('vehicleList', payload.vehicleList);
+          this.$.vehicle_autocomplete.isLoading = false;
+        },
+
+        _handleModelGetResponseFail: function(_event) {
+          this.$.model_autocomplete.isLoading = false;
+        },
+
+        _handleModelGetResponseSuccess: function(_event) {
+          const payload = _event.detail.payload;
+          if (payload) this.set('modelList', payload.modelList);
+          this.$.model_autocomplete.isLoading = false;
+        },
+
+        _handleYearGetResponseFail: function(_event) {
+          this.$.year_autocomplete.isLoading = false;
+        },
+
+        _handleYearGetResponseSuccess: function(_event) {
+          const payload = _event.detail.payload;
+          if (payload) this.set('yearList', payload.yearList);
+          this.$.year_autocomplete.isLoading = false;
+        },
+
+        _loadMoreProducts: function() {
+          this.$.product_list_service.generateGetRequest();
+        },
+
+        _onLowerThreshold: function() {
+          this.debounce('_loadMoreProducts', this._loadMoreProducts, 60);
+        },
+
+        _onSidebarResized: function() {
+          this.async(() => {
+            this.$.product_list.notifyResize()
+          }, 200);
+        },
+
+        _onVehicleSelected: function(_event) {
+          this.$.model_autocomplete.isLoading = true;
+          this.$.model_service.generateGetRequest();
+        },
+
+        _onViewProductDetails: function(_event) {
+          this.set('selectedPage', 'product_detail');
+          this.set('currentProduct', _event.detail.product);
+        }
+      });
+    </script>
+</dom-module>

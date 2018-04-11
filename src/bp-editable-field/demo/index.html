@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>eip-data-table demo</title>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+        <script src="../../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+        <link rel="import" href="../../../bower_components/polymer/polymer.html">
+        <link rel="import" href="../../../bower_components/iron-demo-helpers/demo-snippet.html">
+        <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+        <link rel="import" href="../../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+
+        <link rel="import" href="../bp-editable-field.html">
+    </head>
+    <body>
+
+        <demo-snippet>
+            <template>
+                <template is="dom-bind">
+
+                    <style is="custom-style">
+                        .card {
+                            width: 480px;
+                            min-height: 120px;
+                            padding: 40px;
+                            margin: 0 auto 20px;
+                            border-radius: 4px;
+                            box-shadow: 0 0 5px rgba(0, 0, 0, .3);
+                        }
+
+                        bp-editable-field {
+                            --edit-input-border-color: rgba(0, 155, 195, 1);
+                            --edit-input-background: rgba(0, 155, 195, .1);
+                            --cancel-action: #000;
+                        }
+                    </style>
+
+                    <div class="card">
+
+                        <bp-editable-field
+                            id="editable_field"
+                            type="text"
+                            value="{{demoData}}">
+                        </bp-editable-field>
+
+                        <h2>[[demoData]]</h2>
+
+                    </div>
+
+                    <div class="card">
+
+                        <bp-editable-field
+                            id="selectable_field"
+                            type="dropdown"
+                            items="[[demoItems]]"
+                            selected-item="2"
+                            value="{{demoData2}}">
+                        </bp-editable-field>
+
+                        <h2>[[demoData2]]</h2>
+
+                    </div>
+
+                </template>
+
+                <script>
+                    var template = Polymer.dom(this.root).querySelector("template[is='dom-bind']");
+                    template.demoData = "Lorem ipsum dolor sit amet consectetur adipiscing elit.";
+                    template.demoData2 = "";
+                    template.demoItems = [
+                        {title: "Emma Watson"},
+                        {title: "Gal Gadot"},
+                        {title: "Emilia Clark"},
+                        {title: "Kendall Jenner"},
+                        {title: "Margot Robbie"},
+                        {title: "Cara Delevingne"}
+                    ]
+                </script>
+            </template>
+        </demo-snippet>
+
+    </body>
+</html>

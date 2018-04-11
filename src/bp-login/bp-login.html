@@ -1,0 +1,256 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
+
+<dom-module id="bp-login">
+    <!-- HTML, CSS Styles -->
+    <template>
+        <style include="iron-flex">
+            a {
+                cursor: pointer;
+                color: #d32f2f;
+                font-weight: 500;
+            }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+            paper-dialog {
+                width: 300px;
+            }
+
+            paper-input {
+                --paper-input-container-focus-color: #d32f2f;
+            }
+
+            paper-input iron-icon {
+                margin-right: 4px;
+                color: rgba(0, 0, 0, 0.3);
+            }
+
+            paper-tabs {
+                margin: 0 16px !important;
+                padding: 0 !important;
+                border-bottom: 2px solid rgba(241, 241, 241, 0.8);
+                --paper-tabs-selection-bar-color: #d32f2f;
+            }
+
+            paper-tab {
+                --paper-tab-ink: #d32f2f;
+            }
+
+            .active {
+                color: #d32f2f;
+            }
+
+            .buttons {
+                width: 100%;
+                background-color: #d32f2f;
+                color: #fff;
+                margin: 0;
+            }
+
+            .buttons:hover {
+                background-color: #a50303;
+            }
+
+            .form {
+                margin-top: 0 !important;
+            }
+
+            .header {
+                margin-top: 0 !important;
+                padding-top: 20px !important;
+                background: rgba(241, 241, 241, 0.8);
+            }
+
+            .row {
+                margin-top: 16px;
+            }
+
+            #back_btn {
+                position: absolute;
+                top: 0;
+                left: 0;
+                visibility: hidden;
+            }
+
+            #close_btn {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+        </style>
+
+        <paper-dialog id="login_dialog" modal>
+            <div class="header">
+                <paper-icon-button id="back_btn" icon="arrow-back" on-tap="_showAccountPage"></paper-icon-button>
+                <paper-icon-button dialog-dismiss id="close_btn" icon="close"></paper-icon-button>
+                <div class="horizontal layout center-justified">
+                    <img src="../../images/logos/logo.png">
+                </div>
+            </div>
+
+            <paper-tabs selected="{{selectedTab}}" attr-for-selected="name">
+                <paper-tab name="login">INGRESAR</paper-tab>
+                <paper-tab name="signup">CREAR CUENTA</paper-tab>
+            </paper-tabs>
+
+            <iron-pages id="login_pages" selected="0">
+                <div class="form">
+                    <template is="dom-if" if="[[!_checkIsLogin(selectedTab)]]">
+                        <paper-input
+                                id="name_input"
+                                label="Nombre completo"
+                                value="{{name}}"
+                                on-focus="_highlightIcon"
+                                on-blur="_checkHighlight"
+                                required
+                                error-message="Nombre inválido!">
+                            <iron-icon icon="icons:account-box" prefix></iron-icon>
+                        </paper-input>
+                    </template>
+
+                    <paper-input
+                            id="username_input"
+                            label="E-mail"
+                            value="{{username}}"
+                            on-focus="_highlightIcon"
+                            on-blur="_checkHighlight"
+                            required
+                            error-message="E-mail inválido!">
+                        <iron-icon icon="icons:mail" prefix></iron-icon>
+                    </paper-input>
+
+                    <paper-input
+                            id="password_input"
+                            label="Contraseña"
+                            type="password"
+                            value="{{password}}"
+                            on-focus="_highlightIcon"
+                            on-blur="_checkHighlight"
+                            required
+                            error-message="Contraseña inválida!">
+                        <iron-icon icon="icons:lock" prefix></iron-icon>
+                    </paper-input>
+
+                    <template is="dom-if" if="[[_checkIsLogin(selectedTab)]]">
+                        <div class="horizontal layout center-justified row">
+                            <a on-tap="_showForgotPage">Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <paper-button
+                                id="login_btn"
+                                class="buttons row"
+                                raised
+                                on-tap="_login">Iniciar Sesion
+                        </paper-button>
+                    </template>
+
+                    <template is="dom-if" if="[[!_checkIsLogin(selectedTab)]]">
+                        <paper-button
+                                id="signup_btn"
+                                class="buttons row"
+                                raised
+                                on-tap="_signup">Crear cuenta
+                        </paper-button>
+                    </template>
+                </div>
+
+                <div class="form">
+                    <p>
+                        Porfavor ingresa tu correo electrónico.
+                        Te enviaremos un correo para resetear tu contraseña.
+                    </p>
+
+                    <paper-input
+                            id="email_input"
+                            label="Correo electrónico"
+                            value="{{email}}"
+                            on-focus="_highlightIcon"
+                            on-blur="_checkHighlight"
+                            required
+                            error-message="Correo inválido!">
+                        <iron-icon icon="mail" prefix></iron-icon>
+                    </paper-input>
+
+                    <paper-button
+                            id="forgot_btn"
+                            class="buttons row"
+                            raised
+                            on-tap="_forgotPassword">Enviar Correo
+                    </paper-button>
+                </div>
+            </iron-pages>
+        </paper-dialog>
+    </template>
+
+    <!-- Javascript -->
+    <script>
+      Polymer({
+        is: 'bp-login',
+
+        properties: {
+          selectedTab: {
+            type: String,
+            value: 'login'
+          }
+        },
+
+        _highlightIcon: function(e) {
+          let input = e.currentTarget;
+          input.querySelector('iron-icon').toggleClass('active', true);
+        },
+
+        _checkHighlight: function(e) {
+          let input = e.currentTarget;
+          if (input.value) {
+            input.querySelector('iron-icon').toggleClass('active', true);
+          } else {
+            input.querySelector('iron-icon').toggleClass('active', false);
+          }
+        },
+
+        _checkIsLogin: function(_selectedTab) {
+          return _selectedTab === 'login';
+        },
+
+        _login: function() {
+          this.fire('bp-authentication-success', {
+            loggedInUser: {
+              token: 'acm1pt',
+              profile: {
+                firstName: "Alejandro",
+                lastName: "Rojas",
+                username: "arojas"
+              }
+            }
+          });
+          this.$.login_dialog.close();
+        },
+
+        _showAccountPage: function() {
+          this.$.back_btn.style.visibility = "hidden";
+          this.$.login_pages.select(0);
+        },
+
+        _showForgotPage: function() {
+          this.$.login_pages.select(1);
+          this.$.back_btn.style.visibility = "visible";
+        },
+
+        open: function() {
+          this.$.login_dialog.open();
+        }
+      });
+    </script>
+</dom-module>

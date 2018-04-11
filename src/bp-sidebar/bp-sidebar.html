@@ -1,0 +1,208 @@
+<!-- Import elements -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+
+<link rel="import" href="../bp-autocomplete-input/bp-autocomplete-input.html">
+<link rel="import" href="../bp-web-service-handler/bp-web-service-handler.html">
+
+<!-- Define Polymer Element -->
+<dom-module id="bp-sidebar">
+    <!-- HTML, CSS Styles -->
+    <template>
+        <style is="custom-style" include="iron-flex">
+            paper-card {
+                width: 216px;
+                margin-bottom: 16px;
+                font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+                --paper-card-header: {
+                    background-color: #d32f2f;
+                    height: 48px;
+                };
+                --paper-card-header-text: {
+                    text-align: center;
+                    color: #fff;
+                    font-size: 16px;
+                    text-transform: uppercase;
+                    padding: 10px;
+                }
+            }
+
+            google-map {
+                width: 240px;
+                height: 200px;
+            }
+
+            .contact {
+                padding: 0;
+                font-size: 14px;
+                margin-top: 24px;
+
+            }
+
+            .contact iron-icon {
+                margin: 8px 8px 8px 8px;
+                color: #d32f2f;
+            }
+
+            .menu-lbl {
+                font-size: 10px;
+                text-transform: capitalize;
+            }
+
+            .menu-item {
+                color: #6d6d6d;
+                text-decoration: none;
+            }
+
+            .menu-item[selected] {
+                color: #d32f2f;
+                background: #d32f2f26;
+            }
+        </style>
+
+        <div class="vertical layout">
+            <a
+                    id="home"
+                    class="menu-item"
+                    href="/#/home">
+                <paper-button class="vertical layout">
+                    <iron-icon icon="icons:home"></iron-icon>
+                    <span class="menu-lbl">Inicio</span>
+                </paper-button>
+            </a>
+            <a
+                    id="products"
+                    class="menu-item"
+                    href="/#/products">
+                <paper-button class="vertical layout">
+                    <iron-icon icon="icons:build"></iron-icon>
+                    <span class="menu-lbl">Productos</span>
+                </paper-button>
+            </a>
+            <a
+                    id="settings"
+                    class="menu-item"
+                    href="/#/settings">
+                <paper-button class="vertical layout">
+                    <iron-icon icon="icons:settings"></iron-icon>
+                    <span class="menu-lbl">Administracion</span>
+                </paper-button>
+            </a>
+
+            <!--<bp-autocomplete-input-->
+            <!--id="piece_autocomplete"-->
+            <!--label="Grupo"-->
+            <!--value="[[currentPiece.name]]"-->
+            <!--search-text="[[currentPiece.name]]"-->
+            <!--text-property="name"-->
+            <!--value-property="id"-->
+            <!--list="[[pieceList]]"-->
+            <!--selected-item="{{currentPiece}}"-->
+            <!--always-float-label>-->
+            <!--</bp-autocomplete-input>-->
+            <!--<bp-autocomplete-input-->
+            <!--id="vehicle_autocomplete"-->
+            <!--label="Vehiculo"-->
+            <!--value="[[currentVehicle.name]]"-->
+            <!--search-text="[[currentVehicle.name]]"-->
+            <!--text-property="name"-->
+            <!--value-property="id"-->
+            <!--list="[[vehicleList]]"-->
+            <!--selected-item="{{currentVehicle}}"-->
+            <!--always-float-label-->
+            <!--on-iron-select="_onVehicleSelected">-->
+            <!--</bp-autocomplete-input>-->
+            <!--<bp-autocomplete-input-->
+            <!--id="model_autocomplete"-->
+            <!--label="Modelo"-->
+            <!--value="[[currentModel.name]]"-->
+            <!--search-text="[[currentModel.name]]"-->
+            <!--text-property="name"-->
+            <!--value-property="modelId"-->
+            <!--list="[[modelList]]"-->
+            <!--selected-item="{{currentModel}}"-->
+            <!--always-float-label-->
+            <!--on-iron-select="_onModelSelected">-->
+            <!--</bp-autocomplete-input>-->
+            <!--<bp-autocomplete-input-->
+            <!--id="year_autocomplete"-->
+            <!--label="Año"-->
+            <!--value="[[currentYear.year]]"-->
+            <!--search-text="[[currentYear.year]]"-->
+            <!--text-property="year"-->
+            <!--value-property="year"-->
+            <!--list="[[yearList]]"-->
+            <!--selected-item="{{currentYear}}"-->
+            <!--always-float-label-->
+            <!--on-iron-select="_onYearSelected">-->
+            <!--</bp-autocomplete-input>-->
+        </div>
+
+        <!--<div class="contact">-->
+        <!--<google-map-->
+        <!--disable-default-ui-->
+        <!--fit-to-markers-->
+        <!--latitude="-17.3941931"-->
+        <!--longitude="-66.1646564"-->
+        <!--zoom="15"-->
+        <!--api-key="AIzaSyAnhM5EtKv3rNf320LZMQIRMxoUdYIq8Ck">-->
+        <!--<google-map-marker-->
+        <!--latitude="-17.394526"-->
+        <!--longitude="-66.164469"-->
+        <!--title="BP">-->
+        <!--</google-map-marker>-->
+        <!--</google-map>-->
+        <!--<div>-->
+        <!--<iron-icon icon="communication:location-on" ></iron-icon>-->
+        <!--Gral Acha #670-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--<iron-icon icon="communication:phone"></iron-icon>-->
+        <!--72252840-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--<iron-icon icon="communication:email"></iron-icon>-->
+        <!--brake_parts@hotmail.com-->
+        <!--</div>-->
+        <!--</div>-->
+    </template>
+
+    <!-- Javascript -->
+    <script>
+      Polymer({
+        is: 'bp-sidebar',
+
+        properties: {
+          currentVehicle: {
+            type: Object,
+            notify: true,
+            value: {
+              id: '',
+              name: ''
+            }
+          },
+          vehicleList: {
+            type: Array,
+            notify: true,
+            value: []
+          }
+        },
+
+        selectMenu: function(_menu) {
+          const $menuItems = Polymer.dom(this.root).querySelectorAll('.menu-item');
+          $menuItems.forEach(_item => _item.removeAttribute('selected'));
+          this.$[_menu].setAttribute('selected', true);
+        }
+
+      });
+    </script>
+</dom-module>
